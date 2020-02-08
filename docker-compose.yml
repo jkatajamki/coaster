@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  db:
+    container_name: coaster-postgres
+    image: postgres:12.1-alpine
+    ports:
+      - "25432:5432"
+    environment:
+      - POSTGRES_USER=coaster
+      - POSTGRES_PASSWORD=password
