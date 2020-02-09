@@ -2,12 +2,14 @@
   "project": "Coaster",
   "port": 8088,
   "db": {
+    "driver": "pg",
     "host": "postgres",
     "port": 25432,
     "database": "coaster",
     "user": "coaster",
     "password": "password",
     "max": 10,
-    "idleTimeoutMillis": 30000
+    "idleTimeoutMillis": 30000,
+    "env": "dev"
   }
 }

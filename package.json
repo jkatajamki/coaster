@@ -4,6 +4,8 @@
   "description": "Coaster. Remade.",
   "scripts": {
     "clean": "rm -rf ./dist && mkdir -p dist",
+    "migrate:create": "NODE_ENV=dev ./db-migrate.js create",
+    "migrate:up": "NODE_ENV=dev ./db-migrate.js up",
     "dev": "npm run dev:server",
     "dev:server": "npm run clean && npm run watch:server",
     "lint": "eslint 'src/**/*.ts'",
@@ -12,7 +14,11 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "2.19.0",
     "@typescript-eslint/parser": "2.19.0",
+    "config": "3.2.5",
+    "db-migrate": "0.11.6",
+    "db-migrate-pg": "1.0.0",
     "eslint": "6.8.0",
+    "pg": "7.18.1",
     "typescript": "3.7.5"
   },
   "devDependencies": {
