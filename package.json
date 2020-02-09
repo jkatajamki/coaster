@@ -4,6 +4,7 @@
   "description": "Coaster. Remade.",
   "scripts": {
     "clean": "rm -rf ./dist && mkdir -p dist",
+    "dev": "npm run dev:server",
     "dev:server": "npm run clean && npm run watch:server",
     "lint": "eslint 'src/**/*.ts'",
     "watch:server": "NODE_ENV=development tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/server.js'"
