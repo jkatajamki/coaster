@@ -11,7 +11,7 @@
     "test:api": "jest --coverage",
     "test:api:watch": "jest --coverage --watchAll",
     "lint": "eslint 'src/**/*.ts'",
-    "watch:server": "tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/server.js'"
+    "watch:server": "tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/connect.js'"
   },
   "jest": {
     "preset": "ts-jest"
@@ -36,6 +36,7 @@
     "@types/jest": "25.1.3",
     "@types/pg": "7.14.1",
     "@types/source-map-support": "0.5.1",
+    "@types/supertest": "2.0.8",
     "@types/winston": "2.4.4",
     "@typescript-eslint/eslint-plugin": "2.19.0",
     "@typescript-eslint/parser": "2.19.0",

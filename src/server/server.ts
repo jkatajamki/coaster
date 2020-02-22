@@ -1,21 +1,16 @@
 import express from 'express'
 import bodyParser from 'body-parser'
-import config from 'config'
 import compression from 'compression'
-import logger, { loggerMiddleware } from './lib/logging/logger'
+import { loggerMiddleware } from './lib/logging/logger'
 import { router } from './routes'
 import 'source-map-support/register'
 
-const port: string = config.get('port')
+const server = express()
 
-const app = express()
+server.use(bodyParser.json())
+server.use(compression())
+server.use(loggerMiddleware)
 
-app.use(bodyParser.json())
-app.use(compression())
-app.use(loggerMiddleware)
+server.use('/api', router)
 
-app.use('/api', router)
-
-app.listen(port, () => {
-  logger.info(`Server listening on port ${port} 💿 🎜 🎝`)
-})
+export default server
