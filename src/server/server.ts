@@ -4,6 +4,7 @@ import config from 'config'
 import compression from 'compression'
 import logger, { loggerMiddleware } from './lib/logging/logger'
 import { router } from './routes'
+import 'source-map-support/register'
 
 const port: string = config.get('port')
 
