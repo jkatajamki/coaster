@@ -4,7 +4,7 @@ import { TransformableInfo } from 'logform'
 
 const LOG_DIR = `${__dirname}/../../../logs/`
 
-const printFormat = (info: TransformableInfo) =>
+const printFormat = (info: TransformableInfo): string =>
   `${info.timestamp} - ${info.level}: ${info.message}`
 
 const formatConfig = {

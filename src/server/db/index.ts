@@ -1,4 +1,4 @@
-import { Pool } from 'pg'
+import { Pool, PoolClient } from 'pg'
 import config from 'config'
 
 interface DbConfig {
@@ -13,7 +13,7 @@ interface DbConfig {
   idleTimeoutMillis: number
 }
 
-export default () => {
+export default (): Promise<PoolClient> => {
   const dbConfig: DbConfig = config.get('db')
 
   const pool = new Pool({

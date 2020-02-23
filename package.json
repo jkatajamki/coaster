@@ -8,9 +8,11 @@
     "migrate:up": "NODE_ENV=dev ./db-migrate.js up",
     "dev": "NODE_ENV=dev npm run dev:server",
     "dev:server": "NODE_ENV=dev npm run clean && npm run watch:server",
-    "test:api": "jest --coverage",
+    "test": "npm run clean && npm run test:api",
+    "test:api": "npm run lint:api && jest --coverage",
     "test:api:watch": "jest --coverage --watchAll",
     "lint": "eslint 'src/**/*.ts'",
+    "lint:api": "eslint 'src/server/**/*.ts'",
     "watch:server": "tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/connect.js'"
   },
   "jest": {
