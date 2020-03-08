@@ -1,19 +1,27 @@
-FROM node:13:8.0-alpine
+# Development stage
+FROM node:13.8.0-alpine AS development
 
-RUN apk add --no-cache git
-
-WORKDIR /home/node/coaster
-
-ENV NODE_ENV=production
-ENV PM2_INSTANCES=0
-
-COPY ./ /home/node/coaster
-
-RUN chown -R node:node /home/node && \
-  npm install --production && npm rebuild && \
-  chown node:node /home/node/coaster -R
+RUN mkdir /home/node/coaster && chown node:node /home/node/coaster
 
 USER node
 
-EXPOSE 8080
+WORKDIR /home/node/coaster
+
+COPY --chown=node:node package.json package-lock.json ./
+
+RUN npm install --quiet
+
+## Production stage
+FROM node:13.8.0-alpine AS production
+
+WORKDIR /home/node/coaster
+
+COPY --from=development --chown=root:root /home/node/coaster/node_modules ./node_modules
+
+COPY . .
+
+RUN chown -R node:node /home/node/coaster
+
+USER node
+
 CMD npm start
