@@ -5,7 +5,7 @@
     "driver": "pg",
     "host": "postgres",
     "port": 5432,
-    "database": "coaster-production",
+    "database": "coaster-development",
     "user": "coaster",
     "password": "password",
     "env": "dev",

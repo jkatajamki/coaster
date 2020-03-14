@@ -1,14 +1,15 @@
 {
   "project": "Coaster",
-  "port": "FROM_ENV",
+  "port": 8088,
   "db": {
-    "host": "FROM_ENV",
-    "port": "FROM_ENV",
-    "database": "FROM_ENV",
-    "user": "FROM_ENV",
-    "password": "FROM_ENV",
+    "driver": "pg",
+    "host": "postgres",
+    "port": 5432,
+    "database": "coaster-production",
+    "user": "coaster",
+    "password": "password",
+    "env": "dev",
     "max": 10,
-    "idleTimeoutMillis": 30000,
-    "env": "FROM_ENV"
+    "idleTimeoutMillis": 30000
   }
 }

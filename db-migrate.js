@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('dotenv').config()
+
 const DBMigrate = require('db-migrate')
 const config = require('config')
 

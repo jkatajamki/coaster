@@ -12,5 +12,14 @@ services:
       - .:/home/node/coaster
       - coaster_node_modules:/home/node/coaster/node_modules
 
+  postgres:
+    image: postgres:12
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PORT=${DB_PORT}
+      - POSTGRES_HOST=${DB_HOST}
+
 volumes:
   coaster_node_modules:
