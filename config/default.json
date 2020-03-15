@@ -5,10 +5,10 @@
     "driver": "pg",
     "host": "postgres",
     "port": 5432,
-    "database": "coaster-production",
-    "user": "coaster",
-    "password": "password",
-    "env": "dev",
+    "database": "coasterproduction",
+    "user": "postgres",
+    "password": "coaster",
+    "env": "production",
     "max": 10,
     "idleTimeoutMillis": 30000
   }
