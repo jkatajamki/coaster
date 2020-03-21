@@ -16,6 +16,7 @@ services:
 
   postgres:
     image: postgres:12
+    network_mode: "host"
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
