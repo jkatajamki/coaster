@@ -1,4 +1,5 @@
 import { Pool, PoolClient } from 'pg'
+import { TaskEither, tryCatch } from 'fp-ts/lib/TaskEither'
 import config from 'config'
 
 interface DbConfig {
@@ -13,7 +14,7 @@ interface DbConfig {
   idleTimeoutMillis: number
 }
 
-export default (): Promise<PoolClient> => {
+export default (): TaskEither<Error, PoolClient> => {
   const dbConfig: DbConfig = config.get('db')
 
   const pool = new Pool({
@@ -24,5 +25,8 @@ export default (): Promise<PoolClient> => {
     user: dbConfig.user,
   })
 
-  return pool.connect()
+  return tryCatch<Error, PoolClient>(
+    () => Promise.resolve(pool.connect()),
+    reason => new Error(String(reason))
+  )
 }

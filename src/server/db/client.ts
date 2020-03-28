@@ -1,39 +1,44 @@
-import { Result, ok, err } from 'neverthrow'
-import { QueryResult } from 'pg'
+import { QueryResult, PoolClient } from 'pg'
+import * as TE from 'fp-ts/lib/TaskEither'
+import { pipe } from 'fp-ts/lib/pipeable'
 import db from './db'
-import logger from '../lib/logging/logger'
 
-export const execute = async <T, A>(
+export const execute = <A, B>(
   query: string,
-  args?: A[]
-): Promise<Result<QueryResult<T>, Error>> => {
-  const dbClient = await db()
+  args?: B[]
+): TE.TaskEither<Error, QueryResult<A>> => {
+  const doExecute = <A>(dbClient: PoolClient): TE.TaskEither<Error, QueryResult<A>> =>
+    TE.tryCatch<Error, QueryResult<A>>(
+      () => dbClient.query(query, args),
+      reason => new Error(String(reason))
+    )
 
-  try {
-    const result = await dbClient.query(query, args)
-
-    return ok(result)
-  } catch (error) {
-    logger.error(error)
-
-    return err(error)
-  }
+  return pipe(
+    db(),
+    TE.chain(poolClient => doExecute(poolClient))
+  )
 }
 
-export const tx = async <T>(
-  action: Promise<Result<QueryResult<T>, Error>>
-): Promise<Result<QueryResult<T>, Error>> => {
-  await execute('BEGIN')
+const beginTx = <A>(): TE.TaskEither<Error, QueryResult<A>> => execute('BEGIN')
 
-  try {
-    const result = await action
+const commitTx = <A>(): TE.TaskEither<Error, QueryResult<A>> => execute('COMMIT')
 
-    await execute('COMMIT')
+const rollbackTx = <A>(): TE.TaskEither<Error, QueryResult<A>> => execute('ROLLBACK')
 
-    return result
-  } catch (error) {
-    await execute('ROLLBACK')
+export const tx = <A>(
+  action: TE.TaskEither<Error, QueryResult<A>>
+): TE.TaskEither<Error, QueryResult<A>> =>
+  pipe(
+    beginTx(),
+    TE.chain(() => action),
 
-    return err(error)
-  }
-}
+    TE.mapLeft(err => pipe(
+      rollbackTx(),
+      () => err
+    )),
+
+    TE.map(res => pipe(
+      commitTx(),
+      () => res
+    ))
+  )
