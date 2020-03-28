@@ -1,10 +1,9 @@
 import * as TE from 'fp-ts/lib/TaskEither'
 import { execute } from '../db/client'
 import { pipe } from 'fp-ts/lib/pipeable'
-import logger from '../lib/logging/logger'
 
 export interface User {
-  userId: bigint
+  userId: number
   createdAt: Date
   updatedAt: Date
   email: string
@@ -12,7 +11,7 @@ export interface User {
   salt: string
 }
 
-export const insertNewUser = (user: User): TE.TaskEither<Error, any> => {
+export const insertNewUser = (user: User): TE.TaskEither<Error, User> => {
   const insertNewUser = `
     INSERT INTO coaster_user (
       created_at,
@@ -33,11 +32,17 @@ export const insertNewUser = (user: User): TE.TaskEither<Error, any> => {
 
   return pipe(
     execute(insertNewUser, args),
-    TE.map(res => {
-      // Parse response here
-      logger.info('Got response from db client')
-      console.table(res)
-      return res
-    })
+    TE.map(() => user)
+  )
+}
+
+export const deleteUser = (userId: number): TE.TaskEither<Error, number> => {
+  const deleteUser = `DELETE FROM coaster_user WHERE user_id = $1`
+
+  const args = [userId]
+
+  return pipe(
+    execute(deleteUser, args),
+    TE.map(() => userId)
   )
 }
