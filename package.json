@@ -35,7 +35,7 @@
     "dotenv-safe": "8.2.0",
     "express": "4.17.1",
     "express-winston": "4.0.2",
-    "neverthrow": "2.2.0",
+    "fp-ts": "2.5.3",
     "pg": "7.18.1",
     "winston": "3.2.1"
   },
