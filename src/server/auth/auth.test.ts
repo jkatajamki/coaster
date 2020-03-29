@@ -1,20 +1,49 @@
+import * as A from 'fp-ts/lib/Array'
+import * as TE from 'fp-ts/lib/TaskEither'
 import { isEmailTaken } from './auth'
-import logger from '../lib/logging/logger'
+import { getRight } from '../lib/test/test-utils'
+import authTestUsers from '../user/test-users'
+import { insertNewUser, deleteUser, User } from '../user/user'
 
 const nonExistentEmail = 'non@existent.email'
 
-describe('Find if email is already reserved in database', () => {
-  it('Returns that email does not exist', async () => {
-    const response = await isEmailTaken(nonExistentEmail)
+const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
+  const insertUsers = authTestUsers().map(u => insertNewUser(u))
 
-    response.match(
-      (ok) => {
-        expect(ok).toBeDefined()
-        expect(ok).toBe(false)
-      },
-      (err) => {
-        logger.error(err)
-      }
-    )
+  return A.array.sequence(TE.taskEither)(insertUsers)
+}
+
+const tearDownTestDataForAuth = (): TE.TaskEither<Error, number[]> => {
+  const deleteUsers = authTestUsers().map(({ userId }) => deleteUser(userId))
+
+  return A.array.sequence(TE.taskEither)(deleteUsers)
+}
+
+describe('Find if email is already reserved in database', () => {
+  beforeAll((): Promise<void> => new Promise((resolve) => {
+    setUpTestDataForAuth()().then(() => {
+      resolve()
+    })
+  }))
+
+  afterAll((): Promise<void> => new Promise((resolve) => {
+    tearDownTestDataForAuth()().then(() => {
+      resolve()
+    })
+  }))
+
+  it('Returns that email does not exist', async () => {
+    const resultEither = await isEmailTaken(nonExistentEmail)()
+    const result = getRight(resultEither)
+
+    expect(result).toBeDefined()
+    expect(result).toBeFalsy()
+  })
+
+  it('Returns that email is already taken', async () => {
+    const resultEither = await isEmailTaken(authTestUsers()[0].email)()
+    const result = getRight(resultEither)
+
+    expect(result).toBeTruthy()
   })
 })

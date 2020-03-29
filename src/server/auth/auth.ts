@@ -1,8 +1,9 @@
+import * as TE from 'fp-ts/lib/TaskEither'
 import { execute } from '../db/client'
 import { isMoreThanZeroRows } from '../db/result-utils'
-import { Result } from 'neverthrow'
+import { pipe } from 'fp-ts/lib/pipeable'
 
-export const isEmailTaken = async (email: string): Promise<Result<boolean, Error>> => {
+export const isEmailTaken = (email: string): TE.TaskEither<Error, boolean> => {
   const isEmailTakenQuery = `
     SELECT 1
     FROM coaster_user
@@ -11,7 +12,8 @@ export const isEmailTaken = async (email: string): Promise<Result<boolean, Error
 
   const args = [email]
 
-  const result = await execute(isEmailTakenQuery, args)
-
-  return result.map((value) => isMoreThanZeroRows(value))
+  return pipe(
+    execute(isEmailTakenQuery, args),
+    TE.map(value => isMoreThanZeroRows(value))
+  )
 }
