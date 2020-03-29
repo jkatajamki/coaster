@@ -3,17 +3,17 @@ import * as TE from 'fp-ts/lib/TaskEither'
 import { isEmailTaken } from './auth'
 import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
-import { insertNewUser, deleteUser } from '../user/user'
+import { insertNewUser, deleteUser, User } from '../user/user'
 
 const nonExistentEmail = 'non@existent.email'
 
-const setUpTestDataForAuth = () => {
+const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
   const insertUsers = authTestUsers().map(u => insertNewUser(u))
 
   return A.array.sequence(TE.taskEither)(insertUsers)
 }
 
-const tearDownTestDataForAuth = () => {
+const tearDownTestDataForAuth = (): TE.TaskEither<Error, number[]> => {
   const deleteUsers = authTestUsers().map(({ userId }) => deleteUser(userId))
 
   return A.array.sequence(TE.taskEither)(deleteUsers)
