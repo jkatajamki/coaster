@@ -4,7 +4,7 @@
   "description": "Coaster. Remade.",
   "scripts": {
     "build": "npm run build:server",
-    "build:server": "ls -lah && npm run clean && tsc",
+    "build:server": "npm run clean && tsc",
     "clean": "rm -rf ./dist && mkdir -p dist",
     "dev": "NODE_ENV=development npm run dev:server",
     "dev:start": "docker-compose up",
@@ -26,6 +26,8 @@
     "preset": "ts-jest"
   },
   "dependencies": {
+    "@types/bcrypt": "3.0.0",
+    "bcrypt": "4.0.1",
     "body-parser": "1.19.0",
     "compression": "1.7.4",
     "config": "3.2.5",

@@ -7,9 +7,13 @@ USER node
 
 WORKDIR /home/node/coaster
 
+RUN apk add --no-cache --virtual .build-deps alpine-sdk python
+
 COPY --chown=node:node package.json package-lock.json ./
 
-RUN npm install --quiet
+RUN npm install --quiet --no-optional
+
+RUN apk del .build-deps
 
 ## Production stage
 FROM node:13.8.0-alpine AS production
@@ -23,5 +27,7 @@ COPY . .
 RUN chown -R node:node /home/node/coaster
 
 USER node
+
+RUN apk del .build-deps
 
 CMD npm start

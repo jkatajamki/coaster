@@ -8,7 +8,7 @@ const emptyResult = {
   fields: []
 }
 
-describe('Test util functions for datbase query results', () => {
+describe('Test util functions for database query results', () => {
   it('Returns false for results with no rows', () => {
     const hasRows = isMoreThanZeroRows(emptyResult)
 

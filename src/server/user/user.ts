@@ -1,6 +1,7 @@
 import * as TE from 'fp-ts/lib/TaskEither'
 import { execute } from '../db/client'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { QueryResult } from 'pg'
 
 export interface User {
   userId: number
@@ -11,6 +12,16 @@ export interface User {
   salt: string
 }
 
+export interface ReturningRow {
+  user_id: string
+}
+
+export const pluckNewlyInsertedUserIdFromResult = (result: QueryResult<ReturningRow>): number => {
+  const { rows } = result
+
+  return Number(rows[0].user_id)
+}
+
 export const insertNewUser = (user: User): TE.TaskEither<Error, User> => {
   const insertNewUser = `
     INSERT INTO coaster_user (
@@ -19,7 +30,10 @@ export const insertNewUser = (user: User): TE.TaskEither<Error, User> => {
       user_secret,
       salt,
       updated_at
-    ) VALUES ($1, $2, $3, $4, $5)
+    )
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING
+      user_id
   `
 
   const args = [
@@ -32,7 +46,14 @@ export const insertNewUser = (user: User): TE.TaskEither<Error, User> => {
 
   return pipe(
     execute(insertNewUser, args),
-    TE.map(() => user)
+    TE.map((result) => {
+      const lastInsertUserId = pluckNewlyInsertedUserIdFromResult(result as QueryResult<ReturningRow>)
+
+      return {
+        ...user,
+        userId: lastInsertUserId,
+      }
+    })
   )
 }
 

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import ping from './ping'
-import authRoutes from '../auth/auth-routes'
+import authRoutes from '../../auth/auth-routes'
 
 const router = Router()
 
