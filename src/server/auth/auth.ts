@@ -25,13 +25,8 @@ export const getIsEmailTaken = (
   )
 }
 
-export const createNewUserAccount = (
-  email: string,
-  userSecret: string
-): TE.TaskEither<Error, User> => {
-  const now = new Date()
-
-  const newUserWithSecret = ({ passwordHash, salt }: UserSecrets): User => ({
+export const initNewUserWithSecret = (email: string, now: Date) =>
+  ({passwordHash, salt}: UserSecrets): User => ({
     userId: 0,
     createdAt: now,
     updatedAt: now,
@@ -39,6 +34,14 @@ export const createNewUserAccount = (
     userSecret: passwordHash,
     salt,
   })
+
+export const createNewUserAccount = (
+  email: string,
+  userSecret: string
+): TE.TaskEither<Error, User> => {
+  const now = new Date()
+
+  const newUserWithSecret = initNewUserWithSecret(email, now)
 
   return pipe(
     createUserPasswordHashAndSalt(userSecret),

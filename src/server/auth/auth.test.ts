@@ -1,12 +1,11 @@
 import * as A from 'fp-ts/lib/Array'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
-import { getIsEmailTaken } from './auth'
+import { getIsEmailTaken, createNewUserAccount } from './auth'
 import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
 import { insertNewUser, deleteUser, User } from '../user/user'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { createUserPasswordHashAndSalt } from './cryptography'
 
 const nonExistentEmail = 'non@existent.email'
 
@@ -54,7 +53,7 @@ describe('Email validation for user sign-up determines whether email is already 
           E.fold(
             (error) => {
               expect(error).toBeDefined()
-              expect(error.message).toContain("Email is already taken")
+              expect(error.message).toContain('Email is already taken')
             },
             () => {
               throw Error('getIsEmailTaken returned a non-error value')
@@ -65,16 +64,19 @@ describe('Email validation for user sign-up determines whether email is already 
   })
 })
 
-describe('Password and salt generation', () => {
-  it('Creates a hash and salt from user secret', async () => {
+describe('Create a new user account in database', () => {
+  it('Succeeds in creating a new user account into database', async () => {
+    const email = 'new@email.com'
     const userSecret = 'thisIsASecret1234'
 
-    const resultEither = await createUserPasswordHashAndSalt(userSecret)()
-    const { passwordHash, salt } = getRight(resultEither)
+    const errorOrResult = await createNewUserAccount(email, userSecret)()
+    const result = getRight(errorOrResult)
 
-    expect(passwordHash).toBeDefined
-    expect(typeof passwordHash).toBe('string')
-    expect(salt).toBeDefined
-    expect(typeof salt).toBe('string')
+    expect(result).toBeDefined()
+    expect(typeof result).toBe('object')
+    expect(result.userId).toBeDefined()
+    expect(result.userId).toBeGreaterThan(0)
+
+    await deleteUser(result.userId)()
   })
 })

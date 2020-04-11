@@ -30,14 +30,15 @@ const handleSignUpResponse = (req: Request, res: Response) =>
 )
 
 const signUpOrSendError = (req: Request, res: Response) =>
-  (email: string, userSecret: string): Promise<Response> => pipe(
-    getIsEmailTaken(email),
+  (email: string, userSecret: string): Promise<Response> =>
+    pipe(
+      getIsEmailTaken(email),
 
-    TE.map(() => secretIsValidOrError(userSecret)),
+      TE.map(() => secretIsValidOrError(userSecret)),
 
-    TE.chain(() => createNewUserAccount(email, userSecret)),
-  )()
-    .then(handleSignUpResponse(req, res))
+      TE.chain(() => createNewUserAccount(email, userSecret)),
+    )()
+      .then(handleSignUpResponse(req, res))
 
 router.post('/signUp', (req, res) => {
   const { params: { email, userSecret } } = req
