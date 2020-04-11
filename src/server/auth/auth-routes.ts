@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import { sendErrorResponseJson } from '../api/error-handling'
 import { sendServerResponse } from '../api/server-response'
 import { User } from '../user/user'
+import { secretIsValidOrError } from '../../common/user-secret'
 
 const router = Router()
 
@@ -31,6 +32,9 @@ const handleSignUpResponse = (req: Request, res: Response) =>
 const signUpOrSendError = (req: Request, res: Response) =>
   (email: string, userSecret: string): Promise<Response> => pipe(
     getIsEmailTaken(email),
+
+    TE.map(() => secretIsValidOrError(userSecret)),
+
     TE.chain(() => createNewUserAccount(email, userSecret)),
   )()
     .then(handleSignUpResponse(req, res))

@@ -54,7 +54,6 @@ describe('Find if email is already reserved in database', () => {
             (error) => {
               expect(error).toBeDefined()
               expect(error.message).toContain("Email is already taken")
-              console.error('Hello world')
             },
             () => {
               throw Error('getIsEmailTaken returned a non-error value')
