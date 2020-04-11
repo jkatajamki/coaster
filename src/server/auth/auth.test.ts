@@ -6,6 +6,7 @@ import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
 import { insertNewUser, deleteUser, User } from '../user/user'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { createUserPasswordHashAndSalt } from './cryptography'
 
 const nonExistentEmail = 'non@existent.email'
 
@@ -21,7 +22,7 @@ const tearDownTestDataForAuth = (): TE.TaskEither<Error, number[]> => {
   return A.array.sequence(TE.taskEither)(deleteUsers)
 }
 
-describe('Find if email is already reserved in database', () => {
+describe('Email validation for user sign-up determines whether email is already taken', () => {
   beforeAll((): Promise<void> => new Promise((resolve) => {
     setUpTestDataForAuth()().then(() => {
       resolve()
@@ -61,5 +62,19 @@ describe('Find if email is already reserved in database', () => {
           )
         )
       )
+  })
+})
+
+describe('Password and salt generation', () => {
+  it('Creates a hash and salt from user secret', async () => {
+    const userSecret = 'thisIsASecret1234'
+
+    const resultEither = await createUserPasswordHashAndSalt(userSecret)()
+    const { passwordHash, salt } = getRight(resultEither)
+
+    expect(passwordHash).toBeDefined
+    expect(typeof passwordHash).toBe('string')
+    expect(salt).toBeDefined
+    expect(typeof salt).toBe('string')
   })
 })

@@ -7,10 +7,6 @@ export interface UserSecrets {
   salt: string
 }
 
-// TODO:
-// Validate user password (needs to be long enough)
-// Write unit tests
-
 export const createUserPasswordHashAndSalt = (
   userSecret: string
 ): TE.TaskEither<Error, UserSecrets> =>
