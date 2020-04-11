@@ -6,7 +6,7 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import compression from 'compression'
 import { loggerMiddleware } from './lib/logging/logger'
-import router from './routes/routes'
+import router from './api/routes/routes'
 import 'source-map-support/register'
 
 const server = express()

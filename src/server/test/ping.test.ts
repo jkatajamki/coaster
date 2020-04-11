@@ -1,5 +1,5 @@
 import supertest from 'supertest'
-import server from './server'
+import server from '../server'
 
 describe('Ping API endpoint', () => {
   it('Returns response with status and uptime', async () => {

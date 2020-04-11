@@ -1,9 +1,11 @@
 import * as A from 'fp-ts/lib/Array'
 import * as TE from 'fp-ts/lib/TaskEither'
-import { isEmailTaken } from './auth'
+import * as E from 'fp-ts/lib/Either'
+import { getIsEmailTaken } from './auth'
 import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
 import { insertNewUser, deleteUser, User } from '../user/user'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 const nonExistentEmail = 'non@existent.email'
 
@@ -33,7 +35,7 @@ describe('Find if email is already reserved in database', () => {
   }))
 
   it('Returns that email does not exist', async () => {
-    const resultEither = await isEmailTaken(nonExistentEmail)()
+    const resultEither = await getIsEmailTaken(nonExistentEmail)()
     const result = getRight(resultEither)
 
     expect(result).toBeDefined()
@@ -41,9 +43,24 @@ describe('Find if email is already reserved in database', () => {
   })
 
   it('Returns that email is already taken', async () => {
-    const resultEither = await isEmailTaken(authTestUsers()[0].email)()
-    const result = getRight(resultEither)
 
-    expect(result).toBeTruthy()
+    const alreadyTakenEmail = authTestUsers()[0].email
+
+    getIsEmailTaken(alreadyTakenEmail)()
+      .then(e =>
+        pipe(
+          e,
+          E.fold(
+            (error) => {
+              expect(error).toBeDefined()
+              expect(error.message).toContain("Email is already taken")
+              console.error('Hello world')
+            },
+            () => {
+              throw Error('getIsEmailTaken returned a non-error value')
+            }
+          )
+        )
+      )
   })
 })
