@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { getIsEmailTaken, createNewUserAccount } from './auth'
+import { getIsEmailTaken, createNewUserAccount, emailIsNotEmptyOrError } from './auth'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -32,7 +32,9 @@ const handleSignUpResponse = (req: Request, res: Response) =>
 const signUpOrSendError = (req: Request, res: Response) =>
   (email: string, userSecret: string): Promise<Response> =>
     pipe(
-      getIsEmailTaken(email),
+      TE.fromEither(emailIsNotEmptyOrError(email)),
+
+      TE.map(() => getIsEmailTaken(email)),
 
       TE.map(() => secretIsValidOrError(userSecret)),
 

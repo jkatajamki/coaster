@@ -1,7 +1,7 @@
 import * as A from 'fp-ts/lib/Array'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
-import { getIsEmailTaken, createNewUserAccount } from './auth'
+import { getIsEmailTaken, createNewUserAccount, emailIsNotEmptyOrError } from './auth'
 import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
 import { insertNewUser, deleteUser, User } from '../user/user'
@@ -21,7 +21,7 @@ const tearDownTestDataForAuth = (): TE.TaskEither<Error, number[]> => {
   return A.array.sequence(TE.taskEither)(deleteUsers)
 }
 
-describe('Email validation for user sign-up determines whether email is already taken', () => {
+describe('Email validation for user sign-up', () => {
   beforeAll((): Promise<void> => new Promise((resolve) => {
     setUpTestDataForAuth()().then(() => {
       resolve()
@@ -33,6 +33,27 @@ describe('Email validation for user sign-up determines whether email is already 
       resolve()
     })
   }))
+
+  it('Asserts that empty email is invalid, and non-empty is valid', () => {
+    const emptyEmails = [
+      undefined,
+      null,
+      ''
+    ]
+    const nonEmpty = ['non@empty.email']
+
+    emptyEmails.forEach((email) => {
+      const either = emailIsNotEmptyOrError(email)
+
+      expect(E.isLeft(either)).toBeTruthy()
+    })
+
+    nonEmpty.forEach((email) => {
+      const either = emailIsNotEmptyOrError(email)
+
+      expect(E.isRight(either)).toBeTruthy()
+    })
+  })
 
   it('Returns that email does not exist', async () => {
     const resultEither = await getIsEmailTaken(nonExistentEmail)()
