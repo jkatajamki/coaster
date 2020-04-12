@@ -3,6 +3,7 @@ import { execute } from '../db/client'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { QueryResult } from 'pg'
 import { UserSecrets } from '../auth/cryptography'
+import { isMoreThanZeroRows } from '../db/result-utils'
 
 export interface User {
   userId: number
@@ -67,5 +68,25 @@ export const deleteUser = (userId: number): TE.TaskEither<Error, number> => {
   return pipe(
     execute(deleteUser, args),
     TE.map(() => userId)
+  )
+}
+
+export const getIsEmailTaken = (
+  email: string
+): TE.TaskEither<Error, boolean> => {
+  const isEmailTakenQuery = `
+    SELECT 1
+    FROM coaster_user
+    WHERE email = $1
+  `
+
+  const args = [email]
+
+  return pipe(
+    execute(isEmailTakenQuery, args),
+    TE.chain((value) => isMoreThanZeroRows(value)
+      ? TE.left(Error('Email is already taken'))
+      : TE.right(false)
+    ),
   )
 }

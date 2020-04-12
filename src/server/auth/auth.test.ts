@@ -1,10 +1,10 @@
 import * as A from 'fp-ts/lib/Array'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
-import { getIsEmailTaken, createNewUserAccount, emailIsNotEmptyOrError } from './auth'
+import { createNewUserAccount, emailIsNotEmptyOrError } from './auth'
 import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
-import { insertNewUser, deleteUser, User } from '../user/user'
+import { insertNewUser, deleteUser, User, getIsEmailTaken } from '../user/user'
 import { pipe } from 'fp-ts/lib/pipeable'
 
 const nonExistentEmail = 'non@existent.email'

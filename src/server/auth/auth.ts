@@ -1,35 +1,18 @@
+import { Request, Response } from 'express'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { execute } from '../db/client'
-import { isMoreThanZeroRows } from '../db/result-utils'
 import { createUserPasswordHashAndSalt } from './cryptography'
-import { insertNewUser, User } from '../user/user'
+import { insertNewUser, User, getIsEmailTaken } from '../user/user'
+import { sendErrorResponseJson } from '../api/error-handling'
+import { sendServerResponse } from '../api/server-response'
+import { SignUpRequest } from './auth-routes'
+import { secretIsValidOrError } from '../../common/user-secret'
 
 export const emailIsNotEmptyOrError = (email: string | null | undefined): E.Either<Error, string> =>
   email != null && email.length > 0
     ? E.right(email)
     : E.left(Error(String('Email is empty')))
-
-export const getIsEmailTaken = (
-  email: string
-): TE.TaskEither<Error, boolean> => {
-  const isEmailTakenQuery = `
-    SELECT 1
-    FROM coaster_user
-    WHERE email = $1
-  `
-
-  const args = [email]
-
-  return pipe(
-    execute(isEmailTakenQuery, args),
-    TE.chain((value) => isMoreThanZeroRows(value)
-      ? TE.left(Error('Email is already taken'))
-      : TE.right(false)
-    ),
-  )
-}
 
 export const createNewUserAccount = (
   email: string,
@@ -49,3 +32,35 @@ export const createNewUserAccount = (
     TE.chain(secrets => insertNewUser(newUser, secrets)),
   )
 }
+
+export const handleSignUpResponse = (req: Request, res: Response) =>
+  (userOrErr: E.Either<Error, User>): Response =>
+    pipe(
+      userOrErr,
+
+      E.fold(
+        (error: Error) => sendErrorResponseJson({
+          error,
+          message: error.message,
+          statusCode: 500,
+        }, req, res),
+
+        (x) => sendServerResponse({
+          statusCode: 200,
+          body: x,
+        }, req, res)
+      )
+)
+
+export const signUpOrSendError = (req: Request, res: Response) =>
+  ({ email, userSecret }: SignUpRequest): Promise<Response> =>
+    pipe(
+      TE.fromEither(emailIsNotEmptyOrError(email)),
+
+      TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
+
+      TE.chain(() => getIsEmailTaken(email)),
+
+      TE.chain(() => createNewUserAccount(email, userSecret)),
+    )()
+      .then(handleSignUpResponse(req, res))
