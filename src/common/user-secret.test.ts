@@ -1,10 +1,12 @@
 import * as E from 'fp-ts/lib/Either'
 import { secretIsValidOrError } from './user-secret'
 
-const weakSecrets = [
+const invalidSecrets = [
   'asdv',
   'password',
-  '1234567'
+  '1234567',
+  undefined,
+  null,
 ]
 
 const validSecrets = [
@@ -15,7 +17,7 @@ const validSecrets = [
 
 describe('Password validation fails for terribly weak ones but passes for slightly better ones', () => {
   it('Asserts that weak passwords fail the validation', () => {
-    weakSecrets.forEach((secret) => {
+    invalidSecrets.forEach((secret) => {
       const either = secretIsValidOrError(secret)
 
       expect(E.isLeft(either)).toBeTruthy

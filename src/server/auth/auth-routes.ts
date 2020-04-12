@@ -10,6 +10,11 @@ import { secretIsValidOrError } from '../../common/user-secret'
 
 const router = Router()
 
+export interface SignUpRequest {
+  email: string
+  userSecret: string
+}
+
 const handleSignUpResponse = (req: Request, res: Response) =>
   (userOrErr: E.Either<Error, User>): Response =>
     pipe(
@@ -30,22 +35,22 @@ const handleSignUpResponse = (req: Request, res: Response) =>
 )
 
 const signUpOrSendError = (req: Request, res: Response) =>
-  (email: string, userSecret: string): Promise<Response> =>
+  ({ email, userSecret }: SignUpRequest): Promise<Response> =>
     pipe(
       TE.fromEither(emailIsNotEmptyOrError(email)),
 
-      TE.map(() => getIsEmailTaken(email)),
+      TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
 
-      TE.map(() => secretIsValidOrError(userSecret)),
+      TE.chain(() => getIsEmailTaken(email)),
 
       TE.chain(() => createNewUserAccount(email, userSecret)),
     )()
       .then(handleSignUpResponse(req, res))
 
 router.post('/signUp', (req, res) => {
-  const { params: { email, userSecret } } = req
+  const { body: { email, userSecret } } = req
 
-  return signUpOrSendError(req, res)(email, userSecret)
+  return signUpOrSendError(req, res)({ email, userSecret })
 })
 
 export default router
