@@ -10,7 +10,8 @@ import { pipe } from 'fp-ts/lib/pipeable'
 const nonExistentEmail = 'non@existent.email'
 
 const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
-  const insertUsers = authTestUsers().map(u => insertNewUser(u))
+  const secrets = { passwordHash: 'hash', salt: 'salt' }
+  const insertUsers = authTestUsers().map(u => insertNewUser(u, secrets))
 
   return A.array.sequence(TE.taskEither)(insertUsers)
 }

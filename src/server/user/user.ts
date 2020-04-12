@@ -2,14 +2,13 @@ import * as TE from 'fp-ts/lib/TaskEither'
 import { execute } from '../db/client'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { QueryResult } from 'pg'
+import { UserSecrets } from '../auth/cryptography'
 
 export interface User {
   userId: number
   createdAt: Date
   updatedAt: Date
   email: string
-  userSecret: string
-  salt: string
 }
 
 export interface ReturningRow {
@@ -22,7 +21,10 @@ export const pluckNewlyInsertedUserIdFromResult = (result: QueryResult<Returning
   return Number(rows[0].user_id)
 }
 
-export const insertNewUser = (user: User): TE.TaskEither<Error, User> => {
+export const insertNewUser = (
+  user: User,
+  secrets: UserSecrets
+): TE.TaskEither<Error, User> => {
   const insertNewUser = `
     INSERT INTO coaster_user (
       created_at,
@@ -39,8 +41,8 @@ export const insertNewUser = (user: User): TE.TaskEither<Error, User> => {
   const args = [
     user.createdAt,
     user.email,
-    user.userSecret,
-    user.salt,
+    secrets.passwordHash,
+    secrets.salt,
     user.updatedAt,
   ]
 

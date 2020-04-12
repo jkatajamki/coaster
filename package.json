@@ -9,7 +9,6 @@
     "dev": "NODE_ENV=development npm run dev:server",
     "dev:start": "docker-compose up",
     "dev:server": "NODE_ENV=development npm run clean && npm run watch:server",
-    "install-dep": "docker-compose run --rm coaster npm install",
     "lint": "eslint 'src/**/*.ts'",
     "lint:api": "eslint 'src/server/**/*.ts'",
     "migrate:create": "NODE_ENV=development ./db-migrate.js create",

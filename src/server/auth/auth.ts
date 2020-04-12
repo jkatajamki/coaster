@@ -3,7 +3,7 @@ import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { execute } from '../db/client'
 import { isMoreThanZeroRows } from '../db/result-utils'
-import { createUserPasswordHashAndSalt, UserSecrets } from './cryptography'
+import { createUserPasswordHashAndSalt } from './cryptography'
 import { insertNewUser, User } from '../user/user'
 
 export const emailIsNotEmptyOrError = (email: string | null | undefined): E.Either<Error, string> =>
@@ -31,26 +31,21 @@ export const getIsEmailTaken = (
   )
 }
 
-export const initNewUserWithSecret = (email: string, now: Date) =>
-  ({ passwordHash, salt }: UserSecrets): User => ({
-    userId: 0,
-    createdAt: now,
-    updatedAt: now,
-    email,
-    userSecret: passwordHash,
-    salt,
-  })
-
 export const createNewUserAccount = (
   email: string,
   userSecret: string
 ): TE.TaskEither<Error, User> => {
   const now = new Date()
 
-  const newUserWithSecret = initNewUserWithSecret(email, now)
+  const newUser = {
+    userId: 0,
+    createdAt: now,
+    updatedAt: now,
+    email,
+  }
 
   return pipe(
     createUserPasswordHashAndSalt(userSecret),
-    TE.chain(secrets => insertNewUser(newUserWithSecret(secrets))),
+    TE.chain(secrets => insertNewUser(newUser, secrets)),
   )
 }
