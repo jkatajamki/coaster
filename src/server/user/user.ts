@@ -10,10 +10,10 @@ export interface User {
   email: string
 }
 
-export type UserId = string
+export type DbUserId = string
 
 export interface DbUser {
-  readonly user_id: UserId
+  readonly user_id: DbUserId
   readonly created_at: Date
   readonly email: string
   readonly user_secret: string
@@ -51,7 +51,7 @@ export const upsertUser = (client: DbClient) => (
   ]
 
   return pipe(
-    client.queryOne<DbUser>(upsertUserSQL, args),
+    client.queryOne<DbUser, string | Date | number>(upsertUserSQL, args),
     TE.map((result) => ({
       ...user,
       userId: Number.parseInt(result.user_id),
@@ -127,7 +127,7 @@ export const getUserDataByLoginWord = (client: DbClient) => (
   const args = [loginWord]
 
   return pipe(
-    client.queryOne<DbUser>(getUserDataQuery, args),
+    client.queryOne<DbUser, string>(getUserDataQuery, args),
     TE.chain((result) => {
       if (result == null) {
         return TE.left(Error(String('Cannot find user data by login word')))
