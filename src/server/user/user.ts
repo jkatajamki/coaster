@@ -1,9 +1,7 @@
 import * as TE from 'fp-ts/lib/TaskEither'
-import { execute } from '../db/client'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { QueryResult } from 'pg'
 import { UserSecrets } from '../auth/cryptography'
-import { isMoreThanZeroRows } from '../db/result-utils'
+import { DbClient } from '../db/db-client'
 
 export interface User {
   userId: number
@@ -12,21 +10,22 @@ export interface User {
   email: string
 }
 
-export interface ReturningRow {
-  user_id: string
+export type UserId = string
+
+export interface DbUser {
+  readonly user_id: UserId
+  readonly created_at: Date
+  readonly email: string
+  readonly user_secret: string
+  readonly salt: string
+  readonly updated_at: Date
 }
 
-export const pluckNewlyInsertedUserIdFromResult = (result: QueryResult<ReturningRow>): number => {
-  const { rows } = result
-
-  return Number(rows[0].user_id)
-}
-
-export const insertNewUser = (
+export const upsertUser = (client: DbClient) => (
   user: User,
   secrets: UserSecrets
 ): TE.TaskEither<Error, User> => {
-  const insertNewUser = `
+  const upsertUserSQL = `
     INSERT INTO coaster_user (
       created_at,
       email,
@@ -35,6 +34,10 @@ export const insertNewUser = (
       updated_at
     )
     VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT(email) DO UPDATE SET
+      user_secret = $3,
+      salt = $4,
+      updated_at = $5
     RETURNING
       user_id
   `
@@ -48,30 +51,28 @@ export const insertNewUser = (
   ]
 
   return pipe(
-    execute(insertNewUser, args),
-    TE.map((result) => {
-      const lastInsertUserId = pluckNewlyInsertedUserIdFromResult(result as QueryResult<ReturningRow>)
-
-      return {
-        ...user,
-        userId: lastInsertUserId,
-      }
-    })
+    client.queryOne<DbUser>(upsertUserSQL, args),
+    TE.map((result) => ({
+      ...user,
+      userId: Number.parseInt(result.user_id),
+    }))
   )
 }
 
-export const deleteUser = (userId: number): TE.TaskEither<Error, number> => {
+export const deleteUser = (client: DbClient) => (
+  userId: number
+): TE.TaskEither<Error, number> => {
   const deleteUser = `DELETE FROM coaster_user WHERE user_id = $1`
 
   const args = [userId]
 
   return pipe(
-    execute(deleteUser, args),
+    client.queryOne(deleteUser, args),
     TE.map(() => userId)
   )
 }
 
-export const getIsEmailTaken = (
+export const getIsEmailTaken = (client: DbClient) => (
   email: string
 ): TE.TaskEither<Error, boolean> => {
   const isEmailTakenQuery = `
@@ -83,10 +84,56 @@ export const getIsEmailTaken = (
   const args = [email]
 
   return pipe(
-    execute(isEmailTakenQuery, args),
-    TE.chain((value) => isMoreThanZeroRows(value)
-      ? TE.left(Error('Email is already taken'))
-      : TE.right(false)
-    ),
+    client.queryNone(isEmailTakenQuery, args),
+    TE.chain(
+      (value) => value > 0
+        ? TE.left(Error('Email is already taken'))
+        : TE.right(false)
+      ),
+  )
+}
+
+export const mapResultToUserData = (result: DbUser): { user: User, secrets: UserSecrets } => {
+  const user = {
+    userId: Number.parseInt(result.user_id),
+    createdAt: result.created_at,
+    updatedAt: result.updated_at,
+    email: result.email,
+  }
+
+  const secrets = {
+    passwordHash: result.user_secret,
+    salt: result.salt,
+  }
+
+  return { user, secrets }
+}
+
+export const getUserDataByLoginWord = (client: DbClient) => (
+  loginWord: string
+): TE.TaskEither<Error, { user: User, secrets: UserSecrets }> => {
+  const getUserDataQuery = `
+    SELECT
+      user_id,
+      created_at,
+      email,
+      user_secret,
+      salt,
+      updated_at
+    FROM coaster_user
+    WHERE email = $1
+  `
+
+  const args = [loginWord]
+
+  return pipe(
+    client.queryOne<DbUser>(getUserDataQuery, args),
+    TE.chain((result) => {
+      if (result == null) {
+        return TE.left(Error(String('Cannot find user data by login word')))
+      }
+
+      return TE.right(mapResultToUserData(result))
+    }),
   )
 }

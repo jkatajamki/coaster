@@ -3,18 +3,20 @@ import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { createUserPasswordHashAndSalt } from './cryptography'
-import { insertNewUser, User, getIsEmailTaken } from '../user/user'
+import { User, getIsEmailTaken, upsertUser } from '../user/user'
 import { sendErrorResponseJson } from '../api/error-handling'
 import { sendServerResponse } from '../api/server-response'
-import { SignUpRequest } from './auth-routes'
+import { SignUpRequest, SignInRequest } from './auth-routes'
 import { secretIsValidOrError } from '../../common/user-secret'
+import { pool } from '../db/db'
+import { DbClient } from '../db/db-client'
 
 export const emailIsNotEmptyOrError = (email: string | null | undefined): E.Either<Error, string> =>
   email != null && email.length > 0
     ? E.right(email)
     : E.left(Error(String('Email is empty')))
 
-export const createNewUserAccount = (
+export const createNewUserAccount = (client: DbClient) => (
   email: string,
   userSecret: string
 ): TE.TaskEither<Error, User> => {
@@ -29,7 +31,7 @@ export const createNewUserAccount = (
 
   return pipe(
     createUserPasswordHashAndSalt(userSecret),
-    TE.chain(secrets => insertNewUser(newUser, secrets)),
+    TE.chain(secrets => upsertUser(client)(newUser, secrets)),
   )
 }
 
@@ -53,14 +55,27 @@ export const handleSignUpResponse = (req: Request, res: Response) =>
 )
 
 export const signUpOrSendError = (req: Request, res: Response) =>
-  ({ email, userSecret }: SignUpRequest): Promise<Response> =>
-    pipe(
-      TE.fromEither(emailIsNotEmptyOrError(email)),
+  ({ email, userSecret}: SignUpRequest): Promise<Response> =>
+    pool.withConnection(
+      dbClient => pipe(
+        TE.fromEither(emailIsNotEmptyOrError(email)),
 
-      TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
+        TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
 
-      TE.chain(() => getIsEmailTaken(email)),
+        TE.chain(() => getIsEmailTaken(dbClient)(email)),
 
-      TE.chain(() => createNewUserAccount(email, userSecret)),
+        TE.chain(() => createNewUserAccount(dbClient)(email, userSecret)),
+      )
     )()
-      .then(handleSignUpResponse(req, res))
+    .then(handleSignUpResponse(req, res))
+
+      /*
+export const signInOrSendError = (req: Request, res: Response) =>
+  (signIn: SignInRequest): Promise<Response> =>
+    // Get user data for login word, and verify password for that
+    // Create a new session for user
+    // Return session and user data
+    pipe(
+
+    )
+      */
