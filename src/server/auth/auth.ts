@@ -2,14 +2,13 @@ import { Request, Response } from 'express'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { createUserPasswordHashAndSalt } from './cryptography'
-import { User, getIsEmailTaken, upsertUser } from '../user/user'
-import { sendErrorResponseJson } from '../api/error-handling'
-import { sendServerResponse } from '../api/server-response'
+import { createUserPasswordHashAndSalt, verifyUserSecrets } from './cryptography'
+import { User, getIsEmailTaken, upsertUser, getUserDataByLoginWord } from '../user/user'
 import { SignUpRequest, SignInRequest } from './auth-routes'
 import { secretIsValidOrError } from '../../common/user-secret'
 import { pool } from '../db/db'
 import { DbClient } from '../db/db-client'
+import { handleResponse } from '../api/server-response'
 
 export const emailIsNotEmptyOrError = (email: string | null | undefined): E.Either<Error, string> =>
   email != null && email.length > 0
@@ -35,25 +34,6 @@ export const createNewUserAccount = (client: DbClient) => (
   )
 }
 
-export const handleSignUpResponse = (req: Request, res: Response) =>
-  (userOrErr: E.Either<Error, User>): Response =>
-    pipe(
-      userOrErr,
-
-      E.fold(
-        (error: Error) => sendErrorResponseJson({
-          error,
-          message: error.message,
-          statusCode: 500,
-        }, req, res),
-
-        (x) => sendServerResponse({
-          statusCode: 200,
-          body: x,
-        }, req, res)
-      )
-)
-
 export const signUpOrSendError = (req: Request, res: Response) =>
   ({ email, userSecret}: SignUpRequest): Promise<Response> =>
     pool.withConnection(
@@ -67,15 +47,17 @@ export const signUpOrSendError = (req: Request, res: Response) =>
         TE.chain(() => createNewUserAccount(dbClient)(email, userSecret)),
       )
     )()
-    .then(handleSignUpResponse(req, res))
+    .then(handleResponse(req, res))
 
-      /*
 export const signInOrSendError = (req: Request, res: Response) =>
   (signIn: SignInRequest): Promise<Response> =>
-    // Get user data for login word, and verify password for that
+    // TODO
     // Create a new session for user
     // Return session and user data
-    pipe(
-
-    )
-      */
+    pool.withConnection(
+      dbClient => pipe(
+        getUserDataByLoginWord(dbClient)(signIn.loginWord),
+        TE.chain(userData => verifyUserSecrets(signIn.userSecret, userData.secrets))
+      )
+    )()
+    .then(handleResponse(req, res))

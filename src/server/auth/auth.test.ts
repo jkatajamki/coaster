@@ -7,14 +7,15 @@ import authTestUsers from '../user/test-users'
 import { deleteUser, User, getIsEmailTaken, getUserDataByLoginWord, upsertUser } from '../user/user'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { pool } from '../db/db'
+import { verifyUserSecrets } from './cryptography'
 
 const nonExistentEmail = 'non@existent.email'
 
-const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
-  const secrets = { passwordHash: 'hash', salt: 'salt' }
+const testUserSecrets = { passwordHash: 'hash', salt: 'salt' }
 
+const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
   const insertUsers = authTestUsers().map(u =>
-    pool.withConnection(dbClient => upsertUser(dbClient)(u, secrets)))
+    pool.withConnection(dbClient => upsertUser(dbClient)(u, testUserSecrets)))
 
   return A.array.sequence(TE.taskEither)(insertUsers)
 }
@@ -93,6 +94,23 @@ describe('Authentication methods', () => {
     })
   })
 
+  describe('Create a new user account in database', () => {
+    it('Succeeds in creating a new user account into database', async () => {
+      const email = 'new@email.com'
+      const userSecret = 'thisIsASecret1234'
+
+      const errorOrResult = await pool.withConnection(dbClient => createNewUserAccount(dbClient)(email, userSecret))()
+      const result = getRight(errorOrResult)
+
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('object')
+      expect(result.userId).toBeDefined()
+      expect(result.userId).toBeGreaterThan(0)
+
+      await pool.withConnection(dbClient => deleteUser(dbClient)(result.userId))()
+    })
+  })
+
   describe('Sign-in validation', () => {
     it('Returns user data and secrets', async () => {
       const testUser = authTestUsers()[0]
@@ -100,6 +118,7 @@ describe('Authentication methods', () => {
 
       const resultEither = await pool.withConnection(dbClient =>
         getUserDataByLoginWord(dbClient)(registeredEmail))()
+
       const result = getRight(resultEither)
 
       expect(result).toBeDefined()
@@ -119,6 +138,59 @@ describe('Authentication methods', () => {
       expect(salt.length).toBeGreaterThan(0)
     })
 
+    it('Validates that the correct user password is valid, and wrong passwords are not valid', async () => {
+      const testUserEmail = 'new@email.com'
+      const testUserSecret = 'thisIsASecret1234'
+
+      const errorOrResult = await pool.withConnection(dbClient =>
+        createNewUserAccount(dbClient)(testUserEmail, testUserSecret))()
+      const testUserResult = getRight(errorOrResult)
+
+      const userDataResultEither = await pool.withConnection(dbClient =>
+        getUserDataByLoginWord(dbClient)(testUserResult.email))()
+      const { secrets } = getRight(userDataResultEither)
+
+      // Attempt correct password
+      const verify = await verifyUserSecrets(testUserSecret, secrets)()
+      const verifySecretsResult = getRight(verify)
+      expect(verifySecretsResult).toBeDefined()
+      expect(verifySecretsResult.passwordHash).toBeDefined()
+      expect(verifySecretsResult.salt).toBeDefined()
+      expect(typeof verifySecretsResult.passwordHash).toBe('string')
+      expect(typeof verifySecretsResult.salt).toBe('string')
+      expect(verifySecretsResult.passwordHash.length).toBeGreaterThan(0)
+      expect(verifySecretsResult.salt.length).toBeGreaterThan(0)
+
+      // Attempt incorrect passwords
+      const incorrectPasswords = [
+        testUserSecret.toLowerCase(),
+        `${testUserSecret} `,
+        ` ${testUserSecret}`,
+        `${testUserSecret}v`,
+        testUserSecret.substring(0, testUserSecret.length - 1),
+        '',
+      ]
+
+      await Promise.all(incorrectPasswords.map(async (incorrectPassword) => {
+        const verify = await verifyUserSecrets(incorrectPassword, secrets)()
+
+        pipe(
+          verify,
+          E.fold(
+            (error) => {
+              expect(error).toBeDefined()
+              expect(error.message).toContain('Password did not match')
+            },
+            () => {
+              throw Error('verifyUserSecrets returned a non-error value')
+            }
+          )
+        )
+      }))
+
+      await pool.withConnection(dbClient => deleteUser(dbClient)(testUserResult.userId))()
+    })
+
     it('Fails to return user data', async () => {
       const resultEither = await pool.withConnection(dbClient =>
         getUserDataByLoginWord(dbClient)(nonExistentEmail))()
@@ -136,22 +208,5 @@ describe('Authentication methods', () => {
         )
       )
     })
-  })
-})
-
-describe('Create a new user account in database', () => {
-  it('Succeeds in creating a new user account into database', async () => {
-    const email = 'new@email.com'
-    const userSecret = 'thisIsASecret1234'
-
-    const errorOrResult = await pool.withConnection(dbClient => createNewUserAccount(dbClient)(email, userSecret))()
-    const result = getRight(errorOrResult)
-
-    expect(result).toBeDefined()
-    expect(typeof result).toBe('object')
-    expect(result.userId).toBeDefined()
-    expect(result.userId).toBeGreaterThan(0)
-
-    await pool.withConnection(dbClient => deleteUser(dbClient)(result.userId))()
   })
 })
