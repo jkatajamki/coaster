@@ -1,10 +1,17 @@
 import bcrypt from 'bcrypt'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { add, getUnixTime } from 'date-fns'
+import jwt from 'jsonwebtoken'
+import { UserData } from '../user/user'
 
 export interface UserSecrets {
   passwordHash: string
   salt: string
+}
+
+export interface UserSession {
+  jsonWebToken: string
 }
 
 const delay = (t: number): Promise<void> => new Promise(resolve => setTimeout(resolve, t))
@@ -47,12 +54,36 @@ export const compareSecrets = (
 
 export const verifyUserSecrets = (
   passwordAttempt: string,
-  secrets: UserSecrets
-): TE.TaskEither<Error, UserSecrets> => pipe(
-  compareSecrets(passwordAttempt, secrets.passwordHash),
+  userData: UserData
+): TE.TaskEither<Error, UserData> => pipe(
+  compareSecrets(passwordAttempt, userData.secrets.passwordHash),
+
   TE.chain(
     isValid => isValid
-    ? TE.right(secrets)
+    ? TE.right(userData)
     : TE.left(new Error(String('Password did not match')))
   )
 )
+
+export const createJsonWebToken = (userId: number): string => {
+  const { JWT_SECRET, JWT_TTL } = process.env
+
+  const tokenTTLSeconds = Number.parseInt(JWT_TTL as string)
+  const tokenSecret = JWT_SECRET as string
+
+  const expiration = getUnixTime(add(new Date(), { seconds: tokenTTLSeconds }))
+
+  return jwt.sign({
+    id: userId,
+    expiration: expiration,
+  }, tokenSecret)
+}
+
+export const createNewUserSession = (userId: number): UserSession => {
+  const jsonWebToken = createJsonWebToken(userId)
+  // TODO: persist session in an in-memory data store (like Redis or such) here
+
+  return {
+    jsonWebToken
+  }
+}

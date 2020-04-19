@@ -10,6 +10,11 @@ export interface User {
   email: string
 }
 
+export interface UserData {
+  user: User
+  secrets: UserSecrets
+}
+
 export type DbUserId = string
 
 export interface DbUser {
@@ -93,7 +98,7 @@ export const getIsEmailTaken = (client: DbClient) => (
   )
 }
 
-export const mapResultToUserData = (result: DbUser): { user: User, secrets: UserSecrets } => {
+export const mapResultToUserData = (result: DbUser): UserData => {
   const user = {
     userId: Number.parseInt(result.user_id),
     createdAt: result.created_at,
@@ -111,7 +116,7 @@ export const mapResultToUserData = (result: DbUser): { user: User, secrets: User
 
 export const getUserDataByLoginWord = (client: DbClient) => (
   loginWord: string
-): TE.TaskEither<Error, { user: User, secrets: UserSecrets }> => {
+): TE.TaskEither<Error, UserData> => {
   const getUserDataQuery = `
     SELECT
       user_id,

@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { createUserPasswordHashAndSalt, verifyUserSecrets } from './cryptography'
-import { User, getIsEmailTaken, upsertUser, getUserDataByLoginWord } from '../user/user'
+import { createUserPasswordHashAndSalt, verifyUserSecrets, createNewUserSession } from './cryptography'
+import { User, getIsEmailTaken, upsertUser, getUserDataByLoginWord, UserData } from '../user/user'
 import { SignUpRequest, SignInRequest } from './auth-routes'
 import { secretIsValidOrError } from '../../common/user-secret'
 import { pool } from '../db/db'
@@ -52,12 +52,16 @@ export const signUpOrSendError = (req: Request, res: Response) =>
 export const signInOrSendError = (req: Request, res: Response) =>
   (signIn: SignInRequest): Promise<Response> =>
     // TODO
-    // Create a new session for user
-    // Return session and user data
-    pool.withConnection(
-      dbClient => pipe(
-        getUserDataByLoginWord(dbClient)(signIn.loginWord),
-        TE.chain(userData => verifyUserSecrets(signIn.userSecret, userData.secrets))
-      )
-    )()
-    .then(handleResponse(req, res))
+    // Remove salt from database and types, bcrypt doesn't need it to be saved separately
+    pool.withConnection(dbClient => pipe(
+
+      getUserDataByLoginWord(dbClient)(signIn.loginWord),
+
+      TE.chain((userData: UserData) => verifyUserSecrets(signIn.userSecret, userData)),
+
+      TE.map((userData: UserData) => ({
+        userData,
+        session: createNewUserSession(userData.user.userId),
+      }))
+
+    ))().then(handleResponse(req, res))
