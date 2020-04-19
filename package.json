@@ -25,7 +25,6 @@
     "preset": "ts-jest"
   },
   "dependencies": {
-    "@types/bcrypt": "3.0.0",
     "bcrypt": "4.0.1",
     "body-parser": "1.19.0",
     "compression": "1.7.4",
@@ -39,6 +38,7 @@
     "winston": "3.2.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "3.0.0",
     "@types/body-parser": "1.17.1",
     "@types/compression": "1.7.0",
     "@types/config": "0.0.36",
@@ -52,9 +52,9 @@
     "@types/winston": "2.4.4",
     "@typescript-eslint/eslint-plugin": "2.19.0",
     "@typescript-eslint/parser": "2.19.0",
+    "db-migrate": "0.11.10",
+    "db-migrate-pg": "1.2.1",
     "eslint": "6.8.0",
-    "db-migrate": "0.11.6",
-    "db-migrate-pg": "1.0.0",
     "jest": "25.1.0",
     "source-map-support": "0.5.16",
     "supertest": "4.0.2",
