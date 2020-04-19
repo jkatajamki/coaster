@@ -148,18 +148,18 @@ describe('Authentication methods', () => {
 
       const userDataResultEither = await pool.withConnection(dbClient =>
         getUserDataByLoginWord(dbClient)(testUserResult.email))()
-      const { secrets } = getRight(userDataResultEither)
+      const userData = getRight(userDataResultEither)
 
       // Attempt correct password
-      const verify = await verifyUserSecrets(testUserSecret, secrets)()
-      const verifySecretsResult = getRight(verify)
-      expect(verifySecretsResult).toBeDefined()
-      expect(verifySecretsResult.passwordHash).toBeDefined()
-      expect(verifySecretsResult.salt).toBeDefined()
-      expect(typeof verifySecretsResult.passwordHash).toBe('string')
-      expect(typeof verifySecretsResult.salt).toBe('string')
-      expect(verifySecretsResult.passwordHash.length).toBeGreaterThan(0)
-      expect(verifySecretsResult.salt.length).toBeGreaterThan(0)
+      const verify = await verifyUserSecrets(testUserSecret, userData)()
+      const { secrets } = getRight(verify)
+      expect(secrets).toBeDefined()
+      expect(secrets.passwordHash).toBeDefined()
+      expect(secrets.salt).toBeDefined()
+      expect(typeof secrets.passwordHash).toBe('string')
+      expect(typeof secrets.salt).toBe('string')
+      expect(secrets.passwordHash.length).toBeGreaterThan(0)
+      expect(secrets.salt.length).toBeGreaterThan(0)
 
       // Attempt incorrect passwords
       const incorrectPasswords = [
@@ -172,7 +172,7 @@ describe('Authentication methods', () => {
       ]
 
       await Promise.all(incorrectPasswords.map(async (incorrectPassword) => {
-        const verify = await verifyUserSecrets(incorrectPassword, secrets)()
+        const verify = await verifyUserSecrets(incorrectPassword, userData)()
 
         pipe(
           verify,
