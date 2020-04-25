@@ -3,6 +3,5 @@ CREATE TABLE IF NOT EXISTS coaster_user (
   created_at TIMESTAMP NOT NULL,
   email TEXT NOT NULL UNIQUE,
   user_secret TEXT NOT NULL,
-  salt TEXT NOT NULL,
   updated_at TIMESTAMP NOT NULL
 );

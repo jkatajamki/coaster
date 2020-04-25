@@ -128,14 +128,12 @@ describe('Authentication methods', () => {
       expect(secrets).toBeDefined()
 
       const { userId, email } = user
-      const { passwordHash, salt } = secrets
+      const { passwordHash } = secrets
       expect(email).toBe(testUser.email)
       expect(userId).toBeDefined()
       expect(typeof userId).toBe('number')
       expect(typeof passwordHash).toBe('string')
-      expect(typeof salt).toBe('string')
       expect(passwordHash.length).toBeGreaterThan(0)
-      expect(salt.length).toBeGreaterThan(0)
     })
 
     it('Validates that the correct user password is valid, and wrong passwords are not valid', async () => {
@@ -155,11 +153,8 @@ describe('Authentication methods', () => {
       const { secrets } = getRight(verify)
       expect(secrets).toBeDefined()
       expect(secrets.passwordHash).toBeDefined()
-      expect(secrets.salt).toBeDefined()
       expect(typeof secrets.passwordHash).toBe('string')
-      expect(typeof secrets.salt).toBe('string')
       expect(secrets.passwordHash.length).toBeGreaterThan(0)
-      expect(secrets.salt.length).toBeGreaterThan(0)
 
       // Attempt incorrect passwords
       const incorrectPasswords = [

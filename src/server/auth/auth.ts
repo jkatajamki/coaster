@@ -51,8 +51,6 @@ export const signUpOrSendError = (req: Request, res: Response) =>
 
 export const signInOrSendError = (req: Request, res: Response) =>
   (signIn: SignInRequest): Promise<Response> =>
-    // TODO
-    // Remove salt from database and types, bcrypt doesn't need it to be saved separately
     pool.withConnection(dbClient => pipe(
 
       getUserDataByLoginWord(dbClient)(signIn.loginWord),

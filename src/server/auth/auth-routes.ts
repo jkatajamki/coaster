@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { signUpOrSendError } from './auth'
+import { signUpOrSendError, signInOrSendError } from './auth'
 
 const router = Router()
 
@@ -22,7 +22,7 @@ router.post('/signUp', (req, res) => {
 router.post('/signIn', (req, res) => {
   const { body: { loginWord, userSecret } } = req
 
-  // return signInOrSendError(req, req)({ loginWord, userSecret })
+  return signInOrSendError(req, res)({ loginWord, userSecret })
 })
 
 export default router

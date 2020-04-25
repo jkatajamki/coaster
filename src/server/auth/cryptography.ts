@@ -7,7 +7,6 @@ import { UserData } from '../user/user'
 
 export interface UserSecrets {
   passwordHash: string
-  salt: string
 }
 
 export interface UserSession {
@@ -35,7 +34,7 @@ export const createUserPasswordHashAndSalt = (
     ),
     TE.chain(salt => pipe(
       createPasswordHash(userSecret, salt),
-      TE.map(passwordHash => ({ passwordHash, salt}))
+      TE.map(passwordHash => ({ passwordHash }))
     ))
   )
 

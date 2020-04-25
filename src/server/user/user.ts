@@ -22,7 +22,6 @@ export interface DbUser {
   readonly created_at: Date
   readonly email: string
   readonly user_secret: string
-  readonly salt: string
   readonly updated_at: Date
 }
 
@@ -35,14 +34,12 @@ export const upsertUser = (client: DbClient) => (
       created_at,
       email,
       user_secret,
-      salt,
       updated_at
     )
-    VALUES ($1, $2, $3, $4, $5)
+    VALUES ($1, $2, $3, $4)
     ON CONFLICT(email) DO UPDATE SET
       user_secret = $3,
-      salt = $4,
-      updated_at = $5
+      updated_at = $4
     RETURNING
       user_id
   `
@@ -51,7 +48,6 @@ export const upsertUser = (client: DbClient) => (
     user.createdAt,
     user.email,
     secrets.passwordHash,
-    secrets.salt,
     user.updatedAt,
   ]
 
@@ -108,7 +104,6 @@ export const mapResultToUserData = (result: DbUser): UserData => {
 
   const secrets = {
     passwordHash: result.user_secret,
-    salt: result.salt,
   }
 
   return { user, secrets }
@@ -123,7 +118,6 @@ export const getUserDataByLoginWord = (client: DbClient) => (
       created_at,
       email,
       user_secret,
-      salt,
       updated_at
     FROM coaster_user
     WHERE email = $1
