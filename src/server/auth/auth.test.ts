@@ -2,6 +2,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { createNewUserAccount, emailIsNotEmptyOrError } from './auth'
+import { getPayloadFromToken, getTokenExpiration, createJsonWebToken } from './token'
 import { getRight } from '../lib/test/test-utils'
 import authTestUsers from '../user/test-users'
 import { deleteUser, User, getIsEmailTaken, getUserDataByLoginWord, upsertUser } from '../user/user'
@@ -202,6 +203,31 @@ describe('Authentication methods', () => {
           }
         )
       )
+    })
+  })
+
+  describe('Authentication', () => {
+    it('Creates a JSON web token for user ID, and user ID can be retrieved from it', () => {
+      const testUser = authTestUsers()[0]
+      const { JWT_TTL } = process.env
+
+      const expiration = getTokenExpiration(JWT_TTL)
+      expect(expiration).toBeGreaterThan(0)
+
+      const token = createJsonWebToken(testUser.userId, expiration)
+
+      expect(token).toBeDefined()
+      expect(token.length).toBeDefined()
+      expect(token.length > 0).toBeTruthy()
+
+      const eitherPayloadOrErr = getPayloadFromToken(token)
+      const payload = getRight(eitherPayloadOrErr)
+
+      expect(payload).toBeDefined()
+      expect(payload.id).toBeDefined()
+      expect(payload.id).toBe(testUser.userId)
+      expect(payload.expiration).toBeDefined()
+      expect(payload.expiration).toBe(expiration)
     })
   })
 })

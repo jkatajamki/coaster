@@ -1,9 +1,8 @@
 import bcrypt from 'bcrypt'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { add, getUnixTime } from 'date-fns'
-import jwt from 'jsonwebtoken'
 import { UserData } from '../user/user'
+import { createJsonWebToken, getTokenExpiration } from './token'
 
 export interface UserSecrets {
   passwordHash: string
@@ -64,22 +63,11 @@ export const verifyUserSecrets = (
   )
 )
 
-export const createJsonWebToken = (userId: number): string => {
-  const { JWT_SECRET, JWT_TTL } = process.env
-
-  const tokenTTLSeconds = Number.parseInt(JWT_TTL as string)
-  const tokenSecret = JWT_SECRET as string
-
-  const expiration = getUnixTime(add(new Date(), { seconds: tokenTTLSeconds }))
-
-  return jwt.sign({
-    id: userId,
-    expiration: expiration,
-  }, tokenSecret)
-}
-
 export const createNewUserSession = (userId: number): UserSession => {
-  const jsonWebToken = createJsonWebToken(userId)
+  const { JWT_TTL } = process.env
+  const expiration = getTokenExpiration(JWT_TTL)
+
+  const jsonWebToken = createJsonWebToken(userId, expiration)
   // TODO: persist session in an in-memory data store (like Redis or such) here
 
   return {
