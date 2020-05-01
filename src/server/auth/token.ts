@@ -41,3 +41,15 @@ export const createJsonWebToken = (userId: number, expiration: number): string =
     expiration: expiration,
   }, tokenSecret)
 }
+
+export const isTokenExpired = (payload: JwtPayload): E.Either<Error, JwtPayload> => {
+  const { expiration } = payload
+  const now = getUnixTime(new Date())
+
+  // TODO: Implement refresh token
+  if (expiration < now) {
+    return E.left(new Error('Authentication token has expired'))
+  }
+
+  return E.right(payload)
+}

@@ -4,11 +4,12 @@ import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { createUserPasswordHashAndSalt, verifyUserSecrets, createNewUserSession } from './cryptography'
 import { User, getIsEmailTaken, upsertUser, getUserDataByLoginWord, UserData } from '../user/user'
-import { SignUpRequest, SignInRequest } from './auth-routes'
+import { SignUpRequest, SignInRequest } from './authRoutes'
 import { secretIsValidOrError } from '../../common/user-secret'
 import { pool } from '../db/db'
-import { DbClient } from '../db/db-client'
-import { handleResponse } from '../api/server-response'
+import { DbClient } from '../db/dbClient'
+import { handleResponse } from '../api/serverResponse'
+import { getPayloadFromToken, getTokenFromReq, isTokenExpired } from './token'
 
 export const emailIsNotEmptyOrError = (email: string | null | undefined): E.Either<Error, string> =>
   email != null && email.length > 0
@@ -63,3 +64,10 @@ export const signInOrSendError = (req: Request, res: Response) =>
       }))
 
     ))().then(handleResponse(req, res))
+
+export const validateAuthentication = (req: Request): E.Either<Error, number> =>
+  pipe(
+    getPayloadFromToken(getTokenFromReq(req) as string),
+    E.chain(payload => isTokenExpired(payload)),
+    E.map(({ id }) => id)
+  )

@@ -1,8 +1,8 @@
 import * as pg from 'pg'
 import * as TE from 'fp-ts/lib/TaskEither'
-import { DbClient } from './db-client'
+import { DbClient } from './dbClient'
 import { pipe } from 'fp-ts/lib/pipeable'
-import initDbClient, { QueryParams } from './db-client'
+import initDbClient, { QueryParams } from './dbClient'
 
 export interface DbPool {
   query: <A, B>(params: QueryParams, values?: B[]) => TE.TaskEither<Error, A[]>

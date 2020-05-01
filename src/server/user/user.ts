@@ -1,7 +1,7 @@
 import * as TE from 'fp-ts/lib/TaskEither'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { UserSecrets } from '../auth/cryptography'
-import { DbClient } from '../db/db-client'
+import { DbClient } from '../db/dbClient'
 
 export interface User {
   userId: number
@@ -129,10 +129,43 @@ export const getUserDataByLoginWord = (client: DbClient) => (
     client.queryOne<DbUser, string>(getUserDataQuery, args),
     TE.chain((result) => {
       if (result == null) {
-        return TE.left(Error(String('Cannot find user data by login word')))
+        return TE.left(Error(String(`Cannot find user data by ${loginWord}`)))
       }
 
       return TE.right(mapResultToUserData(result))
     }),
   )
 }
+
+export const mapResultToUser = (result: DbUser): User => ({
+  userId: Number.parseInt(result.user_id),
+  createdAt: result.created_at,
+  updatedAt: result.updated_at,
+  email: result.email,
+})
+
+export const getUserById = (client: DbClient) =>
+  (userId: number): TE.TaskEither<Error, User> => {
+    const getUserQuery = `
+      SELECT
+        user_id,
+        created_at,
+        email,
+        updated_at
+      FROM coaster_user
+      WHERE user_id = $1
+    `
+
+    const args = [userId]
+
+    return pipe(
+      client.queryOne<DbUser, number>(getUserQuery, args),
+      TE.chain((result) => {
+        if (result == null) {
+          return TE.left(Error(String(`Cannot find user by id ${userId}`)))
+        }
+
+        return TE.right(mapResultToUser(result))
+      })
+    )
+  }

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
-import { sendErrorResponseJson } from './error-handling'
+import { sendErrorResponseJson } from './errorHandling'
 
 export interface CoasterServerResponse<A> {
   statusCode: number

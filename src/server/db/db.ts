@@ -1,6 +1,6 @@
 import { Pool } from 'pg'
 import config from 'config'
-import { getDbPool } from './db-pool'
+import { getDbPool } from './dbPool'
 
 export interface DbConfig {
   driver: string
