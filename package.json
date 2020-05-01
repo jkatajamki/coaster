@@ -23,7 +23,10 @@
     "watch:server": "tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/connect.js'"
   },
   "jest": {
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "setupFiles": [
+      "./src/server/test/setEnvVars.js"
+    ]
   },
   "dependencies": {
     "bcrypt": "4.0.1",
@@ -32,7 +35,7 @@
     "config": "3.2.5",
     "date-fns": "2.11.0",
     "dotenv-safe": "8.2.0",
-    "express": "4.17.1",
+    "express": "5.0.0-alpha.8",
     "express-winston": "4.0.2",
     "fp-ts": "2.5.3",
     "jsonwebtoken": "8.5.1",
@@ -61,7 +64,7 @@
     "jest": "25.1.0",
     "source-map-support": "0.5.16",
     "supertest": "4.0.2",
-    "ts-jest": "25.2.1",
+    "ts-jest": "25.4.0",
     "tsc-watch": "4.1.0",
     "typescript": "3.7.5"
   }
