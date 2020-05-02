@@ -1,44 +1,30 @@
-import * as A from 'fp-ts/lib/Array'
-import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { createNewUserAccount, emailIsNotEmptyOrError } from './auth'
 import { getPayloadFromToken, getTokenExpiration, createJsonWebToken } from './token'
 import { getRight } from '../lib/test/testUtils'
-import authTestUsers from '../user/test-users'
-import { deleteUser, User, getIsEmailTaken, getUserDataByLoginWord, upsertUser } from '../user/user'
+import { testUsers } from '../user/test-users'
+import { deleteUser, getIsEmailTaken, getUserDataByLoginWord, getUserById, User } from '../user/user'
+import { setUpTestDataForAuth, tearDownTestDataForAuth } from '../lib/test/setUpTearDown/auth'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { pool } from '../db/db'
 import { verifyUserSecrets } from './cryptography'
 
 const nonExistentEmail = 'non@existent.email'
 
-const testUserSecrets = { passwordHash: 'hash', salt: 'salt' }
-
-const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
-  const insertUsers = authTestUsers().map(u =>
-    pool.withConnection(dbClient => upsertUser(dbClient)(u, testUserSecrets)))
-
-  return A.array.sequence(TE.taskEither)(insertUsers)
-}
-
-const tearDownTestDataForAuth = (): TE.TaskEither<Error, number[]> => {
-  const deleteUsers = authTestUsers().map(({ userId }) => pool.withConnection(
-    dbClient => deleteUser(dbClient)(userId)
-  ))
-
-  return A.array.sequence(TE.taskEither)(deleteUsers)
-}
-
 describe('Authentication methods', () => {
-  beforeAll((): Promise<void> => new Promise((resolve) => {
-    setUpTestDataForAuth()().then(() => {
-      resolve()
+  beforeAll((): Promise<User[]> => new Promise((resolve) => {
+    setUpTestDataForAuth()().then((result) => {
+      const users = getRight(result)
+
+      resolve(users)
     })
   }))
 
-  afterAll((): Promise<void> => new Promise((resolve) => {
-    tearDownTestDataForAuth()().then(() => {
-      resolve()
+  afterAll((): Promise<string[]> => new Promise((resolve) => {
+    tearDownTestDataForAuth()().then((result) => {
+      const emails = getRight(result)
+
+      resolve(emails)
     })
   }))
 
@@ -75,7 +61,7 @@ describe('Authentication methods', () => {
 
     it('Returns that email is already taken', async () => {
 
-      const alreadyTakenEmail = authTestUsers()[0].email
+      const alreadyTakenEmail = testUsers[0].email
 
       pool.withConnection(dbClient => getIsEmailTaken(dbClient)(alreadyTakenEmail))()
         .then(e =>
@@ -108,13 +94,13 @@ describe('Authentication methods', () => {
       expect(result.userId).toBeDefined()
       expect(result.userId).toBeGreaterThan(0)
 
-      await pool.withConnection(dbClient => deleteUser(dbClient)(result.userId))()
+      await pool.withConnection(dbClient => deleteUser(dbClient)(result.email))()
     })
   })
 
   describe('Sign-in validation', () => {
     it('Returns user data and secrets', async () => {
-      const testUser = authTestUsers()[0]
+      const testUser = testUsers[0]
       const registeredEmail = testUser.email
 
       const resultEither = await pool.withConnection(dbClient =>
@@ -184,7 +170,7 @@ describe('Authentication methods', () => {
         )
       }))
 
-      await pool.withConnection(dbClient => deleteUser(dbClient)(testUserResult.userId))()
+      await pool.withConnection(dbClient => deleteUser(dbClient)(testUserResult.email))()
     })
 
     it('Fails to return user data', async () => {
@@ -196,7 +182,7 @@ describe('Authentication methods', () => {
         E.fold(
           (error) => {
             expect(error).toBeDefined()
-            expect(error.message).toContain('Cannot find user data by login word')
+            expect(error.message).toContain('Cannot find user data by')
           },
           () => {
             throw Error('getUserDataByLoginWord returned a non-error value')
@@ -208,7 +194,7 @@ describe('Authentication methods', () => {
 
   describe('Authentication', () => {
     it('Creates a JSON web token for user ID, and user ID can be retrieved from it', () => {
-      const testUser = authTestUsers()[0]
+      const testUser = testUsers[0]
       const { JWT_TTL } = process.env
 
       const expiration = getTokenExpiration(JWT_TTL)

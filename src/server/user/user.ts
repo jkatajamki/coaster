@@ -61,15 +61,15 @@ export const upsertUser = (client: DbClient) => (
 }
 
 export const deleteUser = (client: DbClient) => (
-  userId: number
-): TE.TaskEither<Error, number> => {
-  const deleteUser = `DELETE FROM coaster_user WHERE user_id = $1`
+  email: string
+): TE.TaskEither<Error, string> => {
+  const deleteUser = `DELETE FROM coaster_user WHERE email = $1`
 
-  const args = [userId]
+  const args = [email]
 
   return pipe(
     client.queryOne(deleteUser, args),
-    TE.map(() => userId)
+    TE.map(() => email)
   )
 }
 

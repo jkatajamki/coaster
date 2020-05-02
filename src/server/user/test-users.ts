@@ -1,6 +1,7 @@
-import { User } from './user';
+import { User } from './user'
+import { UserSecrets } from '../auth/cryptography'
 
-export default (): User[] => [
+export const testUsers: User[] = [
   {
     userId: 1,
     createdAt: new Date(),
@@ -32,3 +33,5 @@ export default (): User[] => [
     email: 'insubitably@existent.email',
   },
 ]
+
+export const testUserSecrets: UserSecrets = { passwordHash: 'hash' }
