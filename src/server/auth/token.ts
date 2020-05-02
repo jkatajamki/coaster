@@ -21,7 +21,7 @@ export const getPayloadFromToken = (token: string): E.Either<Error, JwtPayload> 
 
   return E.tryCatch(
     () => jwt.verify(token, JWT_SECRET as string) as JwtPayload,
-    reason => new Error(String(reason)),
+    () => new Error(String('Authentication required')),
   )
 }
 

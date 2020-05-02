@@ -18,6 +18,7 @@
     "setup:migrate:up": "./db-migrate.js up",
     "start": "npm run build && node dist/server/connect.js",
     "test": "docker-compose run --rm coaster npm run test:api",
+    "test:watch": "docker-compose run --rm coaster npm run test:api:watch",
     "test:api": "npm run lint:api && jest --coverage",
     "test:api:watch": "jest --coverage --watchAll",
     "watch:server": "tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/connect.js'"

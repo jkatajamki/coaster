@@ -35,17 +35,26 @@ export const createNewUserAccount = (client: DbClient) => (
   )
 }
 
+export const validateSignUp = (dbClient: DbClient, email: string, userSecret: string) => pipe(
+  TE.fromEither(emailIsNotEmptyOrError(email)),
+
+  TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
+
+  TE.chain(() => getIsEmailTaken(dbClient)(email)),
+)
+
 export const signUpOrSendError = (req: Request, res: Response) =>
   ({ email, userSecret}: SignUpRequest): Promise<Response> =>
     pool.withConnection(
       dbClient => pipe(
-        TE.fromEither(emailIsNotEmptyOrError(email)),
-
-        TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
-
-        TE.chain(() => getIsEmailTaken(dbClient)(email)),
+        validateSignUp(dbClient, email, userSecret),
 
         TE.chain(() => createNewUserAccount(dbClient)(email, userSecret)),
+
+        TE.map((newUser) => ({
+          user: newUser,
+          session: createNewUserSession(newUser.userId)
+        }))
       )
     )()
     .then(handleResponse(req, res))
@@ -58,16 +67,15 @@ export const signInOrSendError = (req: Request, res: Response) =>
 
       TE.chain((userData: UserData) => verifyUserSecrets(signIn.userSecret, userData)),
 
-      TE.map((userData: UserData) => ({
-        userData,
-        session: createNewUserSession(userData.user.userId),
+      TE.map(({ user }) => ({
+        user,
+        session: createNewUserSession(user.userId),
       }))
 
     ))().then(handleResponse(req, res))
 
-export const validateAuthentication = (req: Request): E.Either<Error, number> =>
-  pipe(
-    getPayloadFromToken(getTokenFromReq(req) as string),
-    E.chain(payload => isTokenExpired(payload)),
-    E.map(({ id }) => id)
-  )
+export const validateAuthentication = (req: Request): E.Either<Error, number> => pipe(
+  getPayloadFromToken(getTokenFromReq(req) as string),
+  E.chain(payload => isTokenExpired(payload)),
+  E.map(({ id }) => id)
+)

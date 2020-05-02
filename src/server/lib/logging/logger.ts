@@ -7,6 +7,8 @@ const LOG_DIR = `${__dirname}/../../../logs/`
 const printFormat = (info: TransformableInfo): string =>
   `${info.timestamp} - ${info.level}: ${info.message}`
 
+// TODO: Trace logging for errors
+
 const formatConfig = {
   default: format.combine(
     format.timestamp(),

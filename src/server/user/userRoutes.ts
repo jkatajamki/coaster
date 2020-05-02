@@ -2,21 +2,18 @@ import { Router } from 'express'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { validateAuthentication } from '../auth/auth'
-import { getUserById } from './user'
+import { getUserById, User } from './user'
 import { pool } from '../db/db'
+import { handleResponse } from '../api/serverResponse'
 
 const router = Router()
 
-// TODO: write integration test that
-// 1. signs up
-// 2. signs in
-// 3. GETs /me
-
-router.get('/me', req => pool.withConnection(
-  dbClient => pipe(
+router.get('/me', (req, res) =>
+  pool.withConnection(dbClient => pipe(
     TE.fromEither(validateAuthentication(req)),
-    TE.chain(userId => getUserById(dbClient)(userId))
-  )
-))
+    TE.chain(userId => getUserById(dbClient)(userId)),
+  ))()
+  .then(handleResponse(req, res))
+)
 
 export default router
