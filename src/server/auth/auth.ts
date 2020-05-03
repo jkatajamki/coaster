@@ -35,7 +35,11 @@ export const createNewUserAccount = (client: DbClient) => (
   )
 }
 
-export const validateSignUp = (dbClient: DbClient, email: string, userSecret: string) => pipe(
+export const validateSignUp = (
+  dbClient: DbClient,
+  email: string,
+  userSecret: string
+): TE.TaskEither<Error, boolean> => pipe(
   TE.fromEither(emailIsNotEmptyOrError(email)),
 
   TE.chain(() => TE.fromEither(secretIsValidOrError(userSecret))),
