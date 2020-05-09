@@ -6,3 +6,5 @@ coverage
 src/**/*.js
 src/**/*.map
 .env
+
+tsconfig.tsbuildinfo
