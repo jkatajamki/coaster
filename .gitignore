@@ -3,7 +3,6 @@ node_modules/
 logs/
 coverage
 =5.0.0
-src/**/*.js
 src/**/*.map
 .env
 
