@@ -42,6 +42,8 @@
     "express-winston": "4.0.2",
     "fp-ts": "2.5.3",
     "jsonwebtoken": "8.5.1",
+    "mobx": "5.15.4",
+    "mobx-react-lite": "2.0.7",
     "pg": "8.0.2",
     "react": "16.13.1",
     "react-dom": "16.13.1",

@@ -3,13 +3,14 @@ import * as TE from 'fp-ts/lib/TaskEither'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { createUserPasswordHashAndSalt, verifyUserSecrets, createNewUserSession } from './cryptography'
-import { User, getIsEmailTaken, upsertUser, getUserDataByLoginWord, UserData } from '../user/user'
+import { getIsEmailTaken, upsertUser, getUserDataByLoginWord, UserData } from '../user/user'
 import { SignUpRequest, SignInRequest } from './authRoutes'
 import { secretIsValidOrError } from '../../common/user-secret'
 import { pool } from '../db/db'
 import { DbClient } from '../db/dbClient'
 import { handleResponse } from '../api/serverResponse'
 import { getPayloadFromToken, getTokenFromReq, isTokenExpired } from './token'
+import { User } from '../../common/user/User'
 
 export const emailIsNotEmptyOrError = (email: string | null | undefined): E.Either<Error, string> =>
   email != null && email.length > 0
