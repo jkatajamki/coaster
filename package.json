@@ -6,7 +6,8 @@
     "build:server": "npm run clean && tsc",
     "build:client": "webpack --config ./src/client/webpack.config.js",
     "clean": "rm -rf ./dist && mkdir -p dist",
-    "dev:client": "NODE_ENV=development webpack-dev-server --config ./src/client/webpack.config.js",
+    "dev:client": "npm run watch:client",
+    "dev:client:start": "NODE_ENV=development webpack-dev-server --config ./src/client/webpack.config.js",
     "dev:start": "docker-compose up",
     "dev:server": "NODE_ENV=development npm run watch:server",
     "install-deps": "docker-compose run --rm coaster npm i",
@@ -21,7 +22,8 @@
     "test:watch": "docker-compose run --rm coaster npm run test:api:watch",
     "test:api": "npm run lint:api && jest --coverage",
     "test:api:watch": "jest --coverage --watchAll",
-    "watch:server": "tsc-watch --watch --pretty --onSuccess 'node --inspect dist/server/connect.js'"
+    "watch:server": "tsc-watch --watch --pretty --project ./src/server/tsconfig.json --onSuccess 'node --inspect dist/server/connect.js'",
+    "watch:client": "tsc-watch --watch --pretty --project ./src/client/tsconfig.json --onSuccess 'npm run dev:client:start'"
   },
   "jest": {
     "preset": "ts-jest",
