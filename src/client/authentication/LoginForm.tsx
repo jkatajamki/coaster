@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, FunctionComponent } from 'react'
-import FormWrapper from '../Form/FormWrapper'
-import FormTextInput from '../Form/FormTextInput'
+import FormWrapper from '../form/FormWrapper'
+import FormTextInput from '../form/FormTextInput'
 
 export interface LoginFormProps {}
 

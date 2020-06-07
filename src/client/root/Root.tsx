@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react'
-import LoginForm from '../Authentication/LoginForm'
+import LoginForm from '../authentication/LoginForm'
 
 const Root: FunctionComponent = () => (
   <>
