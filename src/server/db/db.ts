@@ -1,27 +1,14 @@
 import { Pool } from 'pg'
-import config from 'config'
 import { getDbPool } from './dbPool'
 
-export interface DbConfig {
-  driver: string
-  host: string
-  port: number
-  database: string
-  user: string
-  password: string
-  env: string
-  max?: number
-  idleTimeoutMillis: number
-}
-
-const dbConfig: DbConfig = config.get('db')
+const dbPort = Number.parseInt(process.env.DB_PORT || '')
 
 export const rawPool = new Pool({
-  database: dbConfig.database,
-  host: dbConfig.host,
-  password: dbConfig.password,
-  port: dbConfig.port,
-  user: dbConfig.user,
+  database: process.env.DB_NAME,
+  host: process.env.DB_HOST,
+  password: process.env.DB_PASSWORD,
+  port: dbPort,
+  user: process.env.DB_USERNAME,
 })
 
 export const pool = getDbPool(rawPool)
