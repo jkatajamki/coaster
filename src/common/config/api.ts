@@ -5,7 +5,6 @@ export interface ApiConfig {
 }
 
 export const apiConfig = {
-  port: 8088,
-  baseUrl: 'localhost',
+  baseUrl: '/',
   apiSuffix: 'api',
 }
