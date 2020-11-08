@@ -3,11 +3,12 @@ import { createNewUserAccount, emailIsNotEmptyOrError } from './auth'
 import { getPayloadFromToken, getTokenExpiration, createJsonWebToken } from './token'
 import { getRight } from '../lib/test/testUtils'
 import { testUsers } from '../user/test-users'
-import { deleteUser, getIsEmailTaken, getUserDataByLoginWord, User } from '../user/user'
+import { deleteUser, getIsEmailTaken, getUserDataByLoginWord } from '../user/user'
 import { setUpTestDataForAuth, tearDownTestDataForAuth } from '../lib/test/setUpTearDown/auth'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { pool } from '../db/db'
 import { verifyUserSecrets } from './cryptography'
+import { User } from '../../common/user/User'
 
 const nonExistentEmail = 'non@existent.email'
 

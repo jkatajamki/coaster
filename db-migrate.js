@@ -3,13 +3,16 @@
 require('dotenv').config()
 
 const DBMigrate = require('db-migrate')
-const config = require('config')
 
 const env = process.env.NODE_ENV
 
 const dbConfig = {
-  [env]: config.get('db')
-};
+  [env]: {
+    driver: 'pg',
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+  },
+}
 
 const migrationConfig = {
   ...dbConfig,

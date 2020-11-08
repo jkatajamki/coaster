@@ -1,5 +1,5 @@
-import { User } from './user'
 import { UserSecrets } from '../auth/cryptography'
+import { User } from '../../common/user/User'
 
 export const testUsers: User[] = [
   {

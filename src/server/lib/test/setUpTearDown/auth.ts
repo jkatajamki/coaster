@@ -2,7 +2,8 @@ import * as A from 'fp-ts/lib/Array'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { pool } from '../../../db/db'
 import { testUsers, testUserSecrets } from '../../../user/test-users'
-import { upsertUser, deleteUser, User } from '../../../user/user'
+import { upsertUser, deleteUser } from '../../../user/user'
+import { User } from '../../../../common/user/User'
 
 export const setUpTestDataForAuth = (): TE.TaskEither<Error, User[]> => {
   const insertUsers = testUsers.map(u =>

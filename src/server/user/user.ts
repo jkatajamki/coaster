@@ -2,13 +2,7 @@ import * as TE from 'fp-ts/lib/TaskEither'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { UserSecrets } from '../auth/cryptography'
 import { DbClient } from '../db/dbClient'
-
-export interface User {
-  userId: number
-  createdAt: Date
-  updatedAt: Date
-  email: string
-}
+import { User } from '../../common/user/User'
 
 export interface UserData {
   user: User
