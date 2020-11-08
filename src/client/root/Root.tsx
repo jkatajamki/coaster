@@ -16,13 +16,9 @@ const Root: FunctionComponent = () => {
     )))
   }, [])
 
-  console.log('apiStatus', apiStatus)
-
   return (
     <>
       <main>
-        <h1>Coaster</h1>
-
         <LoginForm />
       </main>
     </>

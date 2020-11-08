@@ -23,20 +23,23 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({}) => {
   }
 
   return (
-    <FormWrapper>
-      <FormTextInput
-        inputId="auth-email"
-        label="Email"
-        value={userEmail}
-        onChange={onChangeUserEmail}
-      />
-      <FormTextInput
-        inputId="auth-password"
-        label="Password"
-        value={userPassword}
-        onChange={onChangeUserPassword}
-      />
-    </FormWrapper>
+    <>
+      <h1>Sign in to Coaster</h1>
+      <FormWrapper>
+        <FormTextInput
+          inputId="auth-email"
+          label="Email"
+          value={userEmail}
+          onChange={onChangeUserEmail}
+        />
+        <FormTextInput
+          inputId="auth-password"
+          label="Password"
+          value={userPassword}
+          onChange={onChangeUserPassword}
+        />
+      </FormWrapper>
+    </>
   )
 }
 
