@@ -28,5 +28,5 @@ DBMigrate.getInstance(false, {
       process.exit(1)
     }
     console.log('Run migrations successfully!')
-  });
+  })
 }).run()
