@@ -1,6 +1,6 @@
 name: Linter and TypeScript compilation
 
-on: pull_request
+on: [push, pull_request]
 jobs:
   lint:
     name: Compile TypeScript and lint the code base
