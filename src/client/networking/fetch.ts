@@ -10,7 +10,7 @@ export interface HttpRequestParams {
 const getApiUrl = ({
   baseUrl,
   apiSuffix
-}: Partial<ApiConfig>) => `${baseUrl}${apiSuffix}/`
+}: Partial<ApiConfig>): string => `${baseUrl}${apiSuffix}/`
 
 const apiClient = axios.create({
   baseURL: getApiUrl(apiConfig),
@@ -20,7 +20,7 @@ const apiClient = axios.create({
   },
 })
 
-export const getHttpRequestHeaders = (params: HttpRequestParams) => {
+export const getHttpRequestHeaders = (params: HttpRequestParams): Record<string, string> => {
   const { userAuthToken } = params
 
   return {

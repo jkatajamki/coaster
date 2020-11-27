@@ -18,15 +18,15 @@ class AuthStore {
 
   @observable authStoreState: StoreState = 'pristine'
 
-  @action signIn = (user: User) => {
+  @action signIn = (user: User): void => {
     this.authData.authenticatedUser = user
   }
 
-  @action signOut = () => {
+  @action signOut = (): void => {
     this.authData.authenticatedUser = null
   }
 
-  @computed getAuthData = () => this.authData
+  @computed getAuthData = (): UserAuthenticationData => this.authData
 }
 
 export default createContext(new AuthStore())
