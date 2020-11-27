@@ -1,6 +1,6 @@
 name: Typescript compile checker
 
-on: push
+on: pull_request
 jobs:
   typescript-compile-checker:
     name: Run the TypeScript compiler to check for errors
