@@ -3,11 +3,13 @@ FROM node:13.8.0-alpine AS development
 
 RUN mkdir /home/node/coaster && chown node:node /home/node/coaster
 
-USER node
-
 WORKDIR /home/node/coaster
 
+RUN apk update
+
 RUN apk add --no-cache --virtual .build-deps alpine-sdk python
+
+USER node
 
 COPY --chown=node:node package.json package-lock.json ./
 
