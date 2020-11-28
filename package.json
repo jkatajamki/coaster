@@ -17,6 +17,7 @@
     "migrate:create": "NODE_ENV=development ./db-migrate.js create",
     "migrate:up": "NODE_ENV=development ./db-migrate.js up",
     "migrate:down": "NODE_ENV=development ./db-migrate.js down",
+    "pre:push": "npm run build && npm run lint && npm run test",
     "setup:migrate:up": "./db-migrate.js up",
     "start": "npm run build && node dist/server/connect.js",
     "test": "docker-compose run --rm coaster npm run test:api",
@@ -34,8 +35,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run test",
-      "pre-push": "npm run test"
+      "pre-commit": "npm run pre:push",
+      "pre-push": "npm run pre:push"
     }
   },
   "dependencies": {
