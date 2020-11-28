@@ -32,6 +32,12 @@
       "./dist/server/test/setEnvVars.js"
     ]
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run test",
+      "pre-push": "npm run test"
+    }
+  },
   "dependencies": {
     "axios": "0.21.0",
     "bcrypt": "5.0.0",
@@ -73,6 +79,7 @@
     "eslint": "6.8.0",
     "eslint-plugin-react": "7.19.0",
     "html-webpack-plugin": "4.3.0",
+    "husky": "4.3.0",
     "jest": "25.1.0",
     "source-map-loader": "0.2.4",
     "source-map-support": "0.5.16",
