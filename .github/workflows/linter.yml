@@ -7,9 +7,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: npm ci
         run: npm ci
+
       - name: lint tsc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
