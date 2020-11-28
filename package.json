@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "Coaster. Remade.",
   "scripts": {
-    "build:server": "npm run clean && tsc",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "npm run clean && tsc -p ./src/server/tsconfig.json",
     "build:client": "webpack --config ./src/client/webpack.config.js",
     "clean": "rm -rf ./dist && mkdir -p dist",
     "dev:client": "npm run watch:client",
