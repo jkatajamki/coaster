@@ -11,6 +11,8 @@ const dbConfig = {
     driver: 'pg',
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
+    host: '0.0.0.0',
+    database: `coaster${env}`
   },
 }
 
