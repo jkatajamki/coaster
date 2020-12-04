@@ -1,35 +1,27 @@
-# Development stage
-FROM node:13.8.0-alpine AS development
+## Build stage ##
+FROM node:13.8.0-alpine AS buildstage
 
-RUN mkdir /home/node/coaster && chown node:node /home/node/coaster
-
-WORKDIR /home/node/coaster
+RUN mkdir -p /home/node
+WORKDIR /home/node
 
 RUN apk update
-
 RUN apk add --no-cache --virtual .build-deps alpine-sdk python
 
-USER node
-
-COPY --chown=node:node package.json package-lock.json ./
-
-RUN npm install --quiet --no-optional
-
-RUN apk del .build-deps
-
-## Production stage
-FROM node:13.8.0-alpine AS production
-
-WORKDIR /home/node/coaster
-
-COPY --from=development --chown=root:root /home/node/coaster/node_modules ./node_modules
-
-COPY . .
-
-RUN chown -R node:node /home/node/coaster
+COPY --chown=node:node . .
 
 USER node
 
-RUN apk del .build-deps
+RUN npm install --no-optional
+
+RUN npm run build
+RUN npm run lint
+
+## Live stage ##
+FROM gcr.io/distroless/nodejs AS livestage
+COPY --from=buildstage /home/node/ /home/node
+WORKDIR /home/node
+RUN chown -R node:node /home/node
+
+USER node
 
 CMD npm start
