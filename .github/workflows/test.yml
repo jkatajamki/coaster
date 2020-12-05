@@ -11,6 +11,10 @@ jobs:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: coasterdevelopment
+      DB_TEST_NAME: coastertest
+      API_URL: http://localhost:8088
+      JWT_SECRET: thisisjustatestjwtsecret
+      JWT_TTL: 5000
 
     steps:
       - name: Checkout code
