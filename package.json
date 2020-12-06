@@ -21,7 +21,7 @@
     "setup:migrate:up": "./db-migrate.js up",
     "setup:test": "./bin/test-db-up.sh && NODE_ENV=test ./db-migrate.js up -e test",
     "start": "node dist/server/connect.js",
-    "test": "jest --coverage",
+    "test": "jest --coverage --runInBand --forceExit",
     "test:watch": "docker-compose run --rm coaster npm run test:api:watch",
     "test:api": "npm run lint:api && jest --coverage",
     "test:api:watch": "jest --coverage --watchAll",
