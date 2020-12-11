@@ -18,4 +18,13 @@ Ensure that you have postgres set in your `/etc/hosts` file to point in localhos
 2. Run app in development mode with `npm run dev:server` and `npm run dev:client`. Server runs on port 8088 in localhost, and client runs in port 3000.
 3. Install new dependencies with `npm run install-dep`. This will install dependencies inside the app Docker image. This way you can avoid re-building the image with every installed dependency. New packages can be installed on the fly while the container is running, watching for code changes, and updating them live.
 
+## Tests
+
 You can run unit and integration tests locally with `npm run test`.
+
+## Workflows
+
+The project uses Github Actions to run workflows on git-related events:
+
+- A workflow that runs lint and TypeScript compilation is always run on pull request
+
