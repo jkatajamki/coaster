@@ -49,7 +49,7 @@
     "express": "5.0.0-alpha.8",
     "express-winston": "4.0.2",
     "fp-ts": "2.5.3",
-    "jsonwebtoken": "8.5.1",
+    "jsonwebtoken": "9.0.0",
     "mobx": "5.15.4",
     "mobx-react-lite": "2.0.7",
     "pg": "8.0.2",
