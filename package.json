@@ -79,18 +79,18 @@
     "db-migrate-pg": "1.2.1",
     "eslint": "6.8.0",
     "eslint-plugin-react": "7.19.0",
-    "html-webpack-plugin": "4.3.0",
+    "html-webpack-plugin": "5.5.0",
     "husky": "4.3.0",
     "jest": "25.1.0",
-    "source-map-loader": "0.2.4",
+    "source-map-loader": "4.0.1",
     "source-map-support": "0.5.16",
     "supertest": "4.0.2",
     "ts-jest": "25.4.0",
-    "ts-loader": "7.0.3",
+    "ts-loader": "9.4.2",
     "tsc-watch": "4.1.0",
     "typescript": "3.7.5",
-    "webpack": "4.43.0",
-    "webpack-cli": "3.3.11",
+    "webpack": "5.75.0",
+    "webpack-cli": "5.0.1",
     "webpack-dev-server": "3.11.0"
   }
 }
